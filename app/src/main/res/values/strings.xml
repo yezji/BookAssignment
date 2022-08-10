@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">BookAssignment</string>
+    <string name="search_main_hint">책 이름을 입력하세요.</string>
 </resources>
