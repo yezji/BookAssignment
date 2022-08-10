@@ -14,5 +14,6 @@ data class BookData(
     @SerializedName("price") val price: Int,
     @SerializedName("sale_price") val sale_price: Int,
     @SerializedName("thumbnail") val thumbnail: String,
-    @SerializedName("status") val status: String
+    @SerializedName("status") val status: String,
+    @SerializedName("like") var like: Boolean
 )

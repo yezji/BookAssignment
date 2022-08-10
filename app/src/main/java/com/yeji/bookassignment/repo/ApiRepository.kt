@@ -1,10 +1,9 @@
 package com.yeji.bookassignment.repo
 
-import com.yeji.bookassignment.network.Api
 import com.yeji.bookassignment.network.ApiFactory
 
 class ApiRepository {
-    fun getSearchBookList(
+    suspend fun getSearchBookList(
         query: String,
         sort: String?,
         page: Int?,
