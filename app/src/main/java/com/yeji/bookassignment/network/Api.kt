@@ -14,7 +14,7 @@ interface Api {
 //        @Query("size") size: Int?,
 //        @Query("target") target: String?
 //    ) : Single<Response>
-    @GET("/v3/search/book")
+    @GET("search/book")
     suspend fun getSearchBookList(
         @Query("query") query: String,
         @Query("sort") sort: String?,
