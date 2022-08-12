@@ -4,9 +4,10 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.data.FragmentEnum
-import com.yeji.bookassignment.repo.ApiRepository
+import com.yeji.bookassignment.repository.ApiRepository
 import kotlinx.coroutines.*
 
 class MainViewModel(private val repository: ApiRepository): ViewModel() {
@@ -21,52 +22,79 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
     val totalCount = MutableLiveData<Int>(0)
     val isLoading = MutableLiveData<Boolean>(false)
 
-    private val _bookList = MutableLiveData<MutableList<BookData>>()
-    val bookList: MutableLiveData<MutableList<BookData>> get() = _bookList
+    private val _bookList = MutableLiveData<MutableList<BookData?>>()
+    val bookList: MutableLiveData<MutableList<BookData?>> get() = _bookList
 
-    fun getAllList() {
-        getSearchBookList(query = "쉽게 배우는 자바" , page = 1)
-//        getSearchBookList(query = "가" , page = 1)
+    init {
+        isProgressVisible.value = false
+        keyword.value = "가"
+        fragmentType.value = FragmentEnum.SearchMain
+        loadError.value = ""
+
+        page.value = 1
+        isEnd.value = false
+        pageableCount.value = 0
+        totalCount.value = 0
+        isLoading.value = false
+
+        _bookList.value = mutableListOf()
     }
 
-    fun getSearchBookList(query: String = keyword.value?:"가",
-                          sort: String = "accuracy",
-                          page: Int = 1,
-                          size: Int = 10,
-                          target: String = "title") {
+    fun getAllList() {
+        clearSearchBookList()
+        page.value = 1
+        val job = viewModelScope.launch(Dispatchers.IO) { getSearchBookList() }
+}
 
-        isProgressVisible.value = true
+    fun getMoreList() {
+        val job = viewModelScope.launch(Dispatchers.IO) { getSearchBookList() }
+    }
 
-        // request search api
-        val job = CoroutineScope(Dispatchers.IO).launch {
-            val response = repository.getSearchBookList(query, sort, page, size, target)
-            withContext(Dispatchers.Main) {
-
-                if (response.documents.isNotEmpty()) {
-                    // TODO: meta로 페이징 처리
-                    if (bookList.value == null) {
-                        bookList.value = (response.documents as MutableList<BookData>)
-                    }
-                    else {
-                        bookList.value!!.addAll(response.documents)
-                    }
-
-                    isEnd.value = response.meta.is_end
-                    pageableCount.value = response.meta.pageable_count
-                    totalCount.value = response.meta.total_count
-
-                    loadError.value = ""
-                    isProgressVisible.value = false
-                }
-                else if (response.errorType != "") {
-                    // TODO: 실패 시 메세지 출력
-                    onError("${response.errorType}, message: ${response.message}")
-                }
-
-
+    suspend fun getSearchBookList(query: String = keyword.value?:"가",
+                                  sort: String = "accuracy",
+                                  page: Int = this.page.value!!,
+                                  size: Int = 10, // TODO: replace fixed value
+                                  target: String = "title")
+    {
+        withContext(Dispatchers.Main) {
+            if (keyword.value.equals("")) {
+                keyword.value = "가"
             }
+            isProgressVisible.value = true
+            Log.d("yezzz viewmodel", "query: $query, page: $page")
 
         }
+
+        // request search api
+        val response = repository.getSearchBookList(query, sort, page, size, target)
+        withContext(Dispatchers.Main) {
+            // success
+            if (response.documents.isNotEmpty()) {
+                if (bookList.value == null) {
+                    bookList.value = (response.documents as MutableList<BookData?>)
+                }
+                else {
+                    bookList.value!!.addAll(response.documents)
+                }
+//                    Log.d("yezzz viewmodel", "booklist: ${bookList.value!!}")
+                    Log.d("yezzz viewmodel", "meta: ${response.meta}")
+
+                isEnd.value = response.meta.is_end
+                pageableCount.value = response.meta.pageable_count
+                totalCount.value = response.meta.total_count
+
+                loadError.value = ""
+                isProgressVisible.value = false
+            }
+            // failure
+            else if (response.errorType != "") {
+                // TODO: 실패 시 메세지 출력
+                onError("${response.errorType}, message: ${response.message}")
+            }
+        }
+
+
+//        Log.d("yezzz viewmodel", "booklist: ${bookList.value!!}")
     }
 
     fun onError(message: String) {
@@ -75,12 +103,7 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
     }
 
     fun clearSearchBookList() {
-        bookList.postValue(mutableListOf())
-    }
-
-    fun toggleLike(pos: Int) {
-        val before = bookList.value!![pos].like
-        bookList.value!![pos].like = !before
+        bookList.value = mutableListOf()
     }
 
 }

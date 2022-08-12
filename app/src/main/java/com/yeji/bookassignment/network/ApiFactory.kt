@@ -37,11 +37,11 @@ object ApiFactory {
         .build()
 
     // retrofit instance
-    val retrofit: Api = Retrofit.Builder()
+    val retrofit: ApiService = Retrofit.Builder()
         .baseUrl(API_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-        .create(Api::class.java)
+        .create(ApiService::class.java)
 
 }

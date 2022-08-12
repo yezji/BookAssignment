@@ -2,9 +2,9 @@ package com.yeji.bookassignment.ui
 
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.MutableLiveData
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -12,118 +12,107 @@ import com.yeji.bookassignment.R
 import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.databinding.ViewMainBookItemBinding
 import com.yeji.bookassignment.databinding.ViewMainBookItemLoadingBinding
+import com.yeji.bookassignment.util.LocalizeCurrency
 
 class BookResultAdapter(
-//    var bookDataList: MutableLiveData<MutableList<BookData>>,
-//    val onToggleLike: Unit
-    private val listener: OnItemClickListener
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    val bookDataList = mutableListOf<BookData>()
-//    var listener: OnItemClickListener? = null
-
-    lateinit var parentView: ViewGroup
+    val itemClick: (BookData, Int) -> Unit
+) : ListAdapter<BookData, RecyclerView.ViewHolder>(diffUtil) {
 
     companion object {
         private const val TYPE_ITEM = 0
         private const val TYPE_LOADING = 1
-    }
 
-    fun setBookDataList(updatedList: MutableList<BookData>) {
-        this.bookDataList.clear()
-        this.bookDataList.addAll(updatedList)
-        notifyDataSetChanged()
-    }
+        val diffUtil = object : DiffUtil.ItemCallback<BookData>() {
+            override fun areItemsTheSame(oldItem: BookData, newItem: BookData): Boolean {
+                // 각 item들의 고유한 값을 비교
+                return oldItem.title == newItem.title && oldItem.like == newItem.like
+            }
 
+            override fun areContentsTheSame(oldItem: BookData, newItem: BookData): Boolean {
+                // item의 세부내용도 같은지 비교하여 다르다면 item을 갱신(notify)
+                return oldItem == newItem
+            }
+        }
+    }
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        parentView = parent
-
         val inflater = LayoutInflater.from(parent.context)
 
-        val itemView = inflater.inflate(R.layout.view_main_book_item, parent, false)
-        val loadingView = inflater.inflate(R.layout.view_main_book_item_loading, parent, false)
+        val itemView = ViewMainBookItemBinding.inflate(inflater, parent, false)
+        val loadingView = ViewMainBookItemLoadingBinding.inflate(inflater, parent, false)
 
-        return when (viewType) {
-            TYPE_ITEM -> BookResultViewHolder(itemView)
-            else -> LoadingViewHolder(loadingView)
-        }
+        return BookResultViewHolder(itemView)
+        // TODO: view type 분리해서 로딩 아이템 보이기
+//        return when (viewType) {
+//            TYPE_ITEM -> BookResultViewHolder(itemView)
+//            else -> LoadingViewHolder(loadingView)
+//        }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-       if (holder is BookResultViewHolder) {
-           showItemRows(holder as BookResultViewHolder, position)
+        val bookData = getItem(position)
+//        Log.d("yezzz adapter", "bookdata: $bookData")
+        if (holder is BookResultViewHolder) {
+            (holder as BookResultViewHolder).bind(bookData, position)
        }
-       else {
-           showLoadingView(holder as LoadingViewHolder, position)
+       else if (holder is LoadingViewHolder) {
+            (holder as LoadingViewHolder).bind()
        }
     }
 
-    fun showLoadingView(holder: LoadingViewHolder, position: Int) {
-        // displayed progressbar
+    override fun getItemViewType(position: Int): Int {
+        return position
+//        return if (getItem(position) == null) TYPE_LOADING
+//        else TYPE_ITEM
     }
 
-    fun showItemRows(holder: BookResultViewHolder, position: Int) {
-        val bookData = bookDataList[position]
+    fun addLoading() {
+        val list = currentList.toMutableList()
+        list.add(null)
+        submitList(list)
+    }
 
-        holder.bind(bookData, position)
-        holder.itemView.setOnClickListener {
-//            listener?.onItemClick(it, position)
-            this.listener.onItemClick(view = it, pos = position, viewType = "itemView")
+    fun deleteLoading() {
+        val list = currentList.toMutableList()
+        if (list.isNotEmpty()) {
+            list.removeLast()
+            submitList(list)
         }
     }
 
 
-    override fun getItemCount(): Int {
-        return bookDataList.size
-    }
+    inner class BookResultViewHolder(val binding: ViewMainBookItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(bookData: BookData?, position: Int) {
 
-//    fun setOnClickListener(listener: OnItemClickListener) {
-//        this.listener = listener
-//    }
+            binding.root.setOnClickListener {
+                itemClick(bookData!!, position)
+            }
 
-    interface OnItemClickListener {
-        fun onItemClick(view: View, pos: Int, viewType: String)
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        return if (bookDataList.get(position).title == "") TYPE_LOADING
-        else TYPE_ITEM
-    }
-
-    fun deleteLoading() {
-        bookDataList.removeLast()
-    }
-
-    inner class BookResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val binding = ViewMainBookItemBinding.bind(itemView)
-
-        fun bind(bookData: BookData, position: Int) {
             Glide.with(itemView.context)
-                .load(bookData.thumbnail)
+                .load(bookData!!.thumbnail)
                 .placeholder(R.drawable.ic_image_24)
                 .fallback(R.drawable.ic_image_24)
                 .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                 .into(binding.ivMainBook)
 
             binding.tvMainBookTitle.text = bookData.title
-            binding.tvMainBookPublishedDate.text = bookData.datetime
+            binding.tvMainBookPublishedDate.text = bookData.datetime.substring(0, 10)
             binding.tvMainBookDescription.text = bookData.contents
-            binding.tvMainBookPrice.text = bookData.price.toString()
-            // TODO: 이미지 할당
-//            binding.ibMainLike.
+            binding.tvMainBookPrice.text = LocalizeCurrency.getCurrency(bookData.price.toDouble())
 
-            binding.ibMainLike.setOnClickListener {
-                listener.onItemClick(view = it, pos = position, viewType = "imageButton")
-            }
+
+            if (bookData.like) binding.ibMainLike.setImageResource(R.drawable.ic_favorite_filled_24)
+            else binding.ibMainLike.setImageResource(R.drawable.ic_favorite_empty_24)
+
+            binding.executePendingBindings() // 데이터가 수정되면 즉각 바인딩
+//            Log.d("yezzz", "title: ${bookData.title}")
         }
     }
 
-    inner class LoadingViewHolder(loadingView: View) : RecyclerView.ViewHolder(loadingView) {
-        private val binding = ViewMainBookItemLoadingBinding.bind(loadingView)
-
-        fun bind(bookData: BookData, position: Int) {
+    inner class LoadingViewHolder(val binding: ViewMainBookItemLoadingBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind() {
+            // displayed progressbar
         }
     }
-
 }

@@ -1,13 +1,20 @@
 package com.yeji.bookassignment.ui
 
 import android.os.Bundle
+import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.yeji.bookassignment.R
+import com.yeji.bookassignment.data.BookData
+import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.FragmentSearchDetailBinding
+import com.yeji.bookassignment.util.LocalizeCurrency
 import com.yeji.bookassignment.viewmodel.MainViewModel
+import kotlin.properties.Delegates
 
 class SearchDetailFragment : Fragment() {
     companion object {
@@ -17,6 +24,8 @@ class SearchDetailFragment : Fragment() {
     private val binding: FragmentSearchDetailBinding get() = requireNotNull(_binding)
 
     private val viewModel: MainViewModel by activityViewModels()
+    private var position: Int = 0
+    private var bookData: BookData = BookData()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -28,16 +37,54 @@ class SearchDetailFragment : Fragment() {
         return binding.root
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.bookList[position].observe(viewLifecycleOwner, Observer { booklist ->
-            booklist?.let {
-                adapter.setBookDataList(booklist.toMutableList())
-            }
-        })
+        setFragmentResultListener(TAG) { requestKey: String, bundle: Bundle ->
+            position = bundle.getInt("itemPosition")
+            bookData = viewModel.bookList.value?.get(position)!!
+            initUI(position)
+        }
 
+//        viewModel.fragmentType.value = FragmentEnum.SearchDetail
     }
 
+    private fun initUI(position: Int) {
+        Glide.with(binding.ivDetailBook.context)
+            .load(bookData.thumbnail)
+            .placeholder(R.drawable.ic_image_24)
+            .fallback(R.drawable.ic_image_24)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .into(binding.ivDetailBook)
+
+        binding.tvDetailBookTitle.text = bookData.title
+        binding.tvDetailPublishedDate.text = bookData.datetime.substring(0, 10)
+        binding.tvDetailBookPublisher.text = bookData.publisher
+        binding.tvDetailBookDescription.text = bookData.contents
+        binding.tvDetailBookPrice.text = LocalizeCurrency.getCurrency(bookData.price.toDouble())
+        setLikeResource()
+
+        binding.ibNormalLike.setOnClickListener {
+            var status = viewModel.bookList.value?.get(position)?.like
+            status = !status!!
+            bookData.like = status
+            val list = viewModel.bookList.value
+            if (list!!.isNotEmpty()) {
+                list[position] = bookData
+                viewModel.bookList.value = list
+                setLikeResource()
+
+                Log.d("yezzzz", "pos: $position, like: ${viewModel.bookList.value!!.get(position)!!.like}")
+            }
+        }
+        binding.ibNormalBack.setOnClickListener {
+            Log.d("yezzzz", "pos: $position, like: ${viewModel.bookList.value!!.get(position)!!.like}")
+            parentFragmentManager.popBackStack()
+        }
+    }
+
+    private fun setLikeResource() {
+        if (viewModel.bookList.value?.get(position)?.like == true) binding.ibNormalLike.setImageResource(R.drawable.ic_favorite_filled_24)
+        else binding.ibNormalLike.setImageResource(R.drawable.ic_favorite_empty_24)
+    }
 }

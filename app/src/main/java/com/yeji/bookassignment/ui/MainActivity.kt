@@ -2,16 +2,20 @@ package com.yeji.bookassignment.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import androidx.activity.viewModels
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.yeji.bookassignment.App
+import com.yeji.bookassignment.R
 import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.ActivityMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
 import com.yeji.bookassignment.viewmodel.MainViewModelFactory
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -21,9 +25,11 @@ class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding get() = requireNotNull(_binding)
     private lateinit var viewModel: MainViewModel
-//    private val viewModel: MainViewModel by viewModels()
+
     private lateinit var transaction: FragmentTransaction
     private lateinit var searchMainFragment: SearchMainFragment
+
+    private var backButtonTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,10 +40,9 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, MainViewModelFactory(repository = (application as App).repository))
             .get(MainViewModel::class.java)
 
-        viewModel.fragmentType.postValue(FragmentEnum.SearchMain)
-//        viewModel.keyword.postValue("가") // TODO: 기본 아무것도 없을 때 처리
+        viewModel.fragmentType.value = FragmentEnum.SearchMain
+        viewModel.keyword.postValue("가") // TODO: 기본 아무것도 없을 때 처리
 
-        initUI()
 
 
         // prepare fragment instance
@@ -46,54 +51,42 @@ class MainActivity : AppCompatActivity() {
         transaction = supportFragmentManager.beginTransaction()
         transaction
             .add(binding.flMainContent.id, searchMainFragment, FragmentEnum.SearchMain.resString)
-            .addToBackStack(null)
             .commit()
+
+
+        initUI()
 
     }
 
     private fun initUI() {
-        binding.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                viewModel.keyword.postValue(query)
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                return false
-            }
-        })
 
         viewModel.keyword.observe(this) { keyword ->
-            if (keyword != "") viewModel.getSearchBookList(keyword, "accuracy", 1, 50, "title")
-            else viewModel.clearSearchBookList()
+            Log.d("yezzz mainactivity", "keyword: $keyword")
+            viewModel.getAllList()
         }
-
 
         viewModel.isProgressVisible.observe(this) { isVisible ->
             // set progressBar visibility
             binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
         }
 
-        // set toolbar
-        viewModel.fragmentType.observe(this) { enum ->
-            when (enum) {
-                FragmentEnum.SearchMain -> {
-                    binding.svSearchMain.visibility = View.VISIBLE
-                    binding.tbNormalMain.visibility = View.GONE
-                }
-                else -> {
-                    binding.svSearchMain.visibility = View.GONE
-                    binding.tbNormalMain.visibility = View.VISIBLE
-
-                    binding.ibNormalBack.setOnClickListener {
-                        supportFragmentManager.popBackStack()
-                    }
-                    binding.ibNormalLike.setOnClickListener {
-                        // TODO: like 처리
-
-                    }
-                }
-            }
-        }
     }
+
+
+
+//    override fun onBackPressed() {
+//        val currentTime = System.currentTimeMillis()
+//        val gapTime = currentTime - backButtonTime
+//
+//        if (gapTime in 0..2000) {
+//            // 2초 안에 뒤로가기를 두번 누를 시 앱 종료
+//            finish()
+//            finish()
+//        }
+//        else {
+//            backButtonTime = currentTime
+//            if (supportFragmentManager.backStackEntryCount <= 1) Toast.makeText(this, getString(R.string.search_main_backclosetoast), Toast.LENGTH_SHORT).show()
+//            else super.onBackPressed()
+//        }
+//    }
 }
