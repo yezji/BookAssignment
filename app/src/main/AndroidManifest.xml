@@ -15,7 +15,8 @@
         android:theme="@style/Theme.BookAssignment"
         tools:targetApi="30">
         <activity
-            android:name=".ui.MainActivity">
+            android:name=".ui.MainActivity"
+            android:windowSoftInputMode="stateAlwaysVisible">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

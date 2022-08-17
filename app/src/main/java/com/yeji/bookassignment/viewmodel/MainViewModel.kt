@@ -7,8 +7,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.data.FragmentEnum
+import com.yeji.bookassignment.data.Response
 import com.yeji.bookassignment.repository.ApiRepository
 import kotlinx.coroutines.*
+import retrofit2.Call
+import retrofit2.Callback
 
 class MainViewModel(private val repository: ApiRepository): ViewModel() {
     val isProgressVisible = MutableLiveData<Boolean>()
@@ -17,7 +20,7 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
     val loadError = MutableLiveData<String?>()
     // paging
     val page = MutableLiveData<Int>(1)
-    val isEnd = MutableLiveData<Boolean>(false)
+    val isEnd = MutableLiveData<Boolean>(true)
     val pageableCount = MutableLiveData<Int>(0)
     val totalCount = MutableLiveData<Int>(0)
     val isLoading = MutableLiveData<Boolean>(false)
@@ -32,7 +35,7 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
         loadError.value = ""
 
         page.value = 1
-        isEnd.value = false
+        isEnd.value = true
         pageableCount.value = 0
         totalCount.value = 0
         isLoading.value = false
@@ -50,56 +53,65 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
         val job = viewModelScope.launch(Dispatchers.IO) { getSearchBookList() }
     }
 
-    suspend fun getSearchBookList(query: String = keyword.value?:"가",
+    suspend fun getSearchBookList(query: String = keyword.value ?: "가",
                                   sort: String = "accuracy",
-                                  page: Int = this.page.value!!,
-                                  size: Int = 10, // TODO: replace fixed value
+                                  page: Int = this.page.value ?: 1,
+                                  size: Int = 50, // TODO: replace fixed value
                                   target: String = "title")
     {
-        withContext(Dispatchers.Main) {
-            if (keyword.value.equals("")) {
-                keyword.value = "가"
-            }
-            isProgressVisible.value = true
-            Log.d("yezzz viewmodel", "query: $query, page: $page")
+            withContext(Dispatchers.Main) {
+                isLoading.value = true
+//                isProgressVisible.value = true
 
-        }
-
-        // request search api
-        val response = repository.getSearchBookList(query, sort, page, size, target)
-        withContext(Dispatchers.Main) {
-            // success
-            if (response.documents.isNotEmpty()) {
-                if (bookList.value == null) {
-                    bookList.value = (response.documents as MutableList<BookData?>)
+                if (keyword.value.equals("")) {
+                    keyword.value = "가"
                 }
+                Log.d("yezzz viewmodel", "isLoading: ${isLoading.value.toString()}")
+                Log.d("yezzz viewmodel", "query: $query, page: $page")
+            }
+
+            // request search api
+            val response = repository.getSearchBookList(query, sort, page, size, target)
+
+            withContext(Dispatchers.Main) {
+                // success case
+                if (response.documents != null) {
+                    val documents = response.documents
+                    val meta = response.meta
+                    if (documents.isNotEmpty()) {
+                        if (bookList.value == null) {
+                            bookList.value = (documents as MutableList<BookData?>)
+                        } else {
+                            val list = bookList.value
+                            list!!.addAll(documents)
+                            bookList.value = list
+                        }
+                    }
+                    Log.d("yezzz viewmodel", "meta: ${meta}")
+
+                    isEnd.value = meta.is_end
+                    pageableCount.value = meta.pageable_count
+                    totalCount.value = meta.total_count
+
+                    loadError.value = ""
+                }
+                // failure case
                 else {
-                    bookList.value!!.addAll(response.documents)
+                    onError("err msg: ${response.errorType}")
                 }
-//                    Log.d("yezzz viewmodel", "booklist: ${bookList.value!!}")
-                    Log.d("yezzz viewmodel", "meta: ${response.meta}")
 
-                isEnd.value = response.meta.is_end
-                pageableCount.value = response.meta.pageable_count
-                totalCount.value = response.meta.total_count
 
-                loadError.value = ""
-                isProgressVisible.value = false
+                isLoading.value = false
+                Log.d("yezzz viewModel", "isLoading: ${isLoading.value}")
+                Log.d("yezzz viewModel", "page: ${page}")
+
             }
-            // failure
-            else if (response.errorType != "") {
-                // TODO: 실패 시 메세지 출력
-                onError("${response.errorType}, message: ${response.message}")
-            }
-        }
-
-
-//        Log.d("yezzz viewmodel", "booklist: ${bookList.value!!}")
     }
 
     fun onError(message: String) {
         loadError.value = message
         isProgressVisible.value = false
+        isLoading.value = false
     }
 
     fun clearSearchBookList() {

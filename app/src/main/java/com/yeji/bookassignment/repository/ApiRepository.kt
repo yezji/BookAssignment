@@ -2,9 +2,7 @@ package com.yeji.bookassignment.repository
 
 import com.yeji.bookassignment.data.Response
 import com.yeji.bookassignment.network.ApiFactory
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import retrofit2.Call
 
 class ApiRepository {
     companion object {
