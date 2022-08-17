@@ -1,6 +1,9 @@
 package com.yeji.bookassignment.network
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
@@ -16,6 +19,13 @@ object ApiFactory {
     // header key
     private const val AUTHORIZATION_KEY = "Authorization"
     private const val AUTHORIZATION_VAL = "KakaoAK 9c15e2ebe7be83c02ce7df05dc607307"
+
+    private val json = Json {
+        isLenient = true // Json 큰따옴표 느슨하게 체크
+        ignoreUnknownKeys = true // Field 값이 없는 경우 무시
+        coerceInputValues = true // "null" 이 들어간경우 default Argument 값으로 대체
+        prettyPrint = true // 읽기 편한 형태로 출력
+    }
 
     class TokenInterceptor : Interceptor {
         @Throws(IOException::class)
@@ -36,11 +46,14 @@ object ApiFactory {
         .addNetworkInterceptor(TokenInterceptor()) // header
         .build()
 
+
     // retrofit instance
+    @OptIn(ExperimentalSerializationApi::class)
     val retrofit: ApiService = Retrofit.Builder()
         .baseUrl(API_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
+//        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
         .create(ApiService::class.java)
 

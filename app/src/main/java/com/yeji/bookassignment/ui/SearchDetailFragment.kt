@@ -10,11 +10,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.yeji.bookassignment.R
 import com.yeji.bookassignment.data.BookData
-import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.FragmentSearchDetailBinding
 import com.yeji.bookassignment.util.LocalizeCurrency
 import com.yeji.bookassignment.viewmodel.MainViewModel
-import kotlin.properties.Delegates
 
 class SearchDetailFragment : Fragment() {
     companion object {
@@ -74,11 +72,10 @@ class SearchDetailFragment : Fragment() {
                 viewModel.bookList.value = list
                 setLikeResource()
 
-                Log.d("yezzzz", "pos: $position, like: ${viewModel.bookList.value!!.get(position)!!.like}")
+                Log.d("yezzz", "pos: $position, like: ${viewModel.bookList.value!!.get(position)!!.like}")
             }
         }
         binding.ibNormalBack.setOnClickListener {
-            Log.d("yezzzz", "pos: $position, like: ${viewModel.bookList.value!!.get(position)!!.like}")
             parentFragmentManager.popBackStack()
         }
     }

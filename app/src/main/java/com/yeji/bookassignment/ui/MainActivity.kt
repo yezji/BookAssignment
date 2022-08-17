@@ -5,17 +5,13 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.yeji.bookassignment.App
-import com.yeji.bookassignment.R
 import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.ActivityMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
 import com.yeji.bookassignment.viewmodel.MainViewModelFactory
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -40,9 +36,6 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, MainViewModelFactory(repository = (application as App).repository))
             .get(MainViewModel::class.java)
 
-        viewModel.fragmentType.value = FragmentEnum.SearchMain
-        viewModel.keyword.postValue("가") // TODO: 기본 아무것도 없을 때 처리
-
 
 
         // prepare fragment instance
@@ -59,7 +52,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUI() {
-
         viewModel.keyword.observe(this) { keyword ->
             Log.d("yezzz mainactivity", "keyword: $keyword")
             viewModel.getAllList()
@@ -70,23 +62,28 @@ class MainActivity : AppCompatActivity() {
             binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
         }
 
+        viewModel.loadError.observe(this) { errorMsg ->
+            if (!errorMsg.equals("")) Toast.makeText(this, "err: $errorMsg", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
 
 
-//    override fun onBackPressed() {
-//        val currentTime = System.currentTimeMillis()
-//        val gapTime = currentTime - backButtonTime
-//
-//        if (gapTime in 0..2000) {
-//            // 2초 안에 뒤로가기를 두번 누를 시 앱 종료
-//            finish()
-//            finish()
-//        }
-//        else {
-//            backButtonTime = currentTime
-//            if (supportFragmentManager.backStackEntryCount <= 1) Toast.makeText(this, getString(R.string.search_main_backclosetoast), Toast.LENGTH_SHORT).show()
-//            else super.onBackPressed()
-//        }
-//    }
+    /*override fun onBackPressed() {
+        val currentTime = System.currentTimeMillis()
+        val gapTime = currentTime - backButtonTime
+
+        if (gapTime in 0..2000) {
+            // 2초 안에 뒤로가기를 두번 누를 시 앱 종료
+            finish()
+            finish()
+        }
+        else {
+            backButtonTime = currentTime
+            if (supportFragmentManager.backStackEntryCount <= 1) Toast.makeText(this, getString(R.string.search_main_backclosetoast), Toast.LENGTH_SHORT).show()
+            else super.onBackPressed()
+        }
+    }*/
+
 }

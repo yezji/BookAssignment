@@ -20,8 +20,8 @@ enum class FragmentEnum(val No: Int, val resString: String, val barType: BarType
 
         fun getEnumByResString(resString: String) : FragmentEnum {
             return when(resString) {
-                FragmentEnum.SearchMain.resString -> FragmentEnum.SearchMain
-                else -> FragmentEnum.SearchDetail
+                SearchMain.resString -> SearchMain
+                else -> SearchDetail
             }
         }
     }
