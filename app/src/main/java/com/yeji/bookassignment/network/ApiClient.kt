@@ -12,7 +12,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-object ApiFactory {
+/**
+ * comments
+ * - Factory는 class로 정의하여 사용. 디자인패턴에서 class로 만들고 create()해서 사용하기에
+ *   의도한대로 Singleton으로 사용하려면 object가 더 적합하다.
+ */
+object ApiClient {
     // server url
     private const val API_URL = "https://dapi.kakao.com/v3/" // product
 
@@ -56,5 +61,6 @@ object ApiFactory {
 //        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
         .create(ApiService::class.java)
+
 
 }

@@ -10,13 +10,21 @@
             type="com.yeji.bookassignment.viewmodel.MainViewModel" />
     </data>
 
-
     <FrameLayout
         android:id="@+id/fl_parent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white_100"
         >
+        <!-- comments
+        - ConstraintLayout 사이즈 잡을 때 "match_parent" 속성을 사용하면 작은 기기에서는 잘려보일 수 있다.
+            - 따라서 width에 지정했다면 StartToStart, EndToEnd에 parent를 지정하여 사용해야 한다.
+        -->
+        <!-- comments
+        - Space 사용하여 margin 잡을 수 있다.
+        - View와 다른점?
+            - View는 속성으로 다른 것들을 그릴 수 있지만, Space는 아무것도 그리지 않고 공간만 잡아준다.
+            -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

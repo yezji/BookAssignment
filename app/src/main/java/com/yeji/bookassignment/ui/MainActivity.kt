@@ -1,26 +1,25 @@
 package com.yeji.bookassignment.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentTransaction
-import androidx.lifecycle.ViewModelProvider
-import com.yeji.bookassignment.App
 import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.ActivityMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
-import com.yeji.bookassignment.viewmodel.MainViewModelFactory
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        private val TAG = MainActivity::class.java.simpleName
+        private val TAG = MainActivity::class.simpleName
     }
 
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding get() = requireNotNull(_binding)
-    private lateinit var viewModel: MainViewModel
+   // private lateinit var viewModel: MainViewModel
+    private val viewModel by viewModels<MainViewModel>()
 
     private lateinit var transaction: FragmentTransaction
     private lateinit var searchMainFragment: SearchMainFragment
@@ -33,8 +32,15 @@ class MainActivity : AppCompatActivity() {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this, MainViewModelFactory(repository = (application as App).repository))
-            .get(MainViewModel::class.java)
+
+        /**
+         * comments
+         * TODO: DI
+         * - DI 주입하는 경우 사용
+         *   현재는 따로 사용하지 않기에 viewModel by viewModels<MainViewModel>()로 만듦
+         */
+//        viewModel = ViewModelProvider(this, MainViewModelFactory(repository = (application as App).repository))
+//            .get(MainViewModel::class.java)
 
 
 

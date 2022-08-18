@@ -30,7 +30,6 @@ class BookResultAdapter(
 
             override fun areContentsTheSame(oldItem: BookData, newItem: BookData): Boolean {
                 // item의 세부내용도 같은지 비교하여 다르다면 item을 갱신(notify)
-//                return oldItem == newItem
                 return oldItem == newItem
             }
         }
@@ -45,7 +44,7 @@ class BookResultAdapter(
 
         return when(viewType) {
             TYPE_LOADING -> LoadingViewHolder(loadingView)
-            else -> BookResultViewHolder(itemView)
+            else -> BookResultViewHolder(itemView, itemClick)
         }
     }
 
@@ -53,21 +52,25 @@ class BookResultAdapter(
         val bookData = getItem(position)
         if (holder is BookResultViewHolder) {
             (holder as BookResultViewHolder).bind(bookData, position)
-       }
-       else if (holder is LoadingViewHolder) {
-            (holder as LoadingViewHolder).bind()
-       }
+        }
+        else if (holder is LoadingViewHolder) {
+            (holder as LoadingViewHolder)
+        }
     }
 
     override fun getItemViewType(position: Int): Int {
         return if (getItem(position) == null) TYPE_LOADING
-        else position
+        else position // item id 재사용 때문에 사용
 //        else TYPE_ITEM
     }
 
     fun addLoading() : Int {
         val list = currentList.toMutableList()
         list.add(null)
+        /**
+         * comments
+         * - submitList()는 view쪽에서 해주는 것이 좋다.
+         */
         submitList(list)
 
         return list.lastIndex // loading position
@@ -85,15 +88,26 @@ class BookResultAdapter(
     }
 
 
-    inner class BookResultViewHolder(val binding: ViewMainBookItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(bookData: BookData?, position: Int) {
-            binding.executePendingBindings() // 데이터가 수정되면 즉각 바인딩
-
+    /**
+     * comments
+     * - inner class보단 class로 빼기
+     *   - itemClick listener도 클래스 인자로 넘겨주는 방식으로 사용
+     *   - init block으로 넣어주어도 좋다.
+     * - nullable type 사용 시 .let을 사용하는 것이 권장되는 방법
+     *   - let, run, apply, also, with 차이 제대로 알고 사용하기
+     */
+    class BookResultViewHolder(val binding: ViewMainBookItemBinding, val itemClick: (BookData, Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
+        private var bookData: BookData? = null
+        init {
             binding.root.setOnClickListener {
-                if (bookData != null) {
-                    itemClick(bookData, position)
+                bookData?.let{
+                    itemClick(it, absoluteAdapterPosition)
                 }
             }
+        }
+        fun bind(bookData: BookData?, position: Int) {
+            //this.bookData = bookData
+            binding.executePendingBindings() // 데이터가 수정되면 즉각 바인딩
 
             Glide.with(itemView.context)
                 .load(bookData?.thumbnail)
@@ -116,13 +130,12 @@ class BookResultAdapter(
                 }
             }
 
-//            Log.d("yezzz", "title: ${bookData.title}")
         }
     }
 
-    inner class LoadingViewHolder(val binding: ViewMainBookItemLoadingBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind() {
-            // displayed progressbar
-        }
+    class LoadingViewHolder(val binding: ViewMainBookItemLoadingBinding) : RecyclerView.ViewHolder(binding.root) {
+//        fun bind() {
+//            // do nothing - displayed progressbar
+//        }
     }
 }

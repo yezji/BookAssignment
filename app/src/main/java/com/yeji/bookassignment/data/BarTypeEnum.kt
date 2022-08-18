@@ -2,6 +2,7 @@ package com.yeji.bookassignment.data
 
 import android.util.SparseArray
 
+@Deprecated("useless")
 enum class BarTypeEnum(val No: Int) {
     Search(0)
     ,Normal(1)

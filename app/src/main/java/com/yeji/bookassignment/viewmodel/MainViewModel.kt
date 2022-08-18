@@ -1,10 +1,7 @@
 package com.yeji.bookassignment.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.data.Response
@@ -13,11 +10,25 @@ import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
 
-class MainViewModel(private val repository: ApiRepository): ViewModel() {
-    val isProgressVisible = MutableLiveData<Boolean>()
+//class MainViewModel(private val repository: ApiRepository): ViewModel() {
+class MainViewModel: ViewModel() {
+
+    /**
+     * comments
+     TODO: Backing Property 방식 적용하기
+     * - Backing Property 방식 사용하기
+        //    private val _keyword = MutableLiveData<String>()
+        //    val keyword: LiveData<String>
+        //    get() = _keyword
+     TODO: Immutable 스타일로 사용하기
+     * - Immutable 스타일로 사용하기
+        // private val books = mutableListOf<BookData>()
+     */
     val keyword = MutableLiveData<String>()
-    val fragmentType = MutableLiveData<FragmentEnum>()
+
+    val isProgressVisible = MutableLiveData<Boolean>()
     val loadError = MutableLiveData<String?>()
+
     // paging
     val page = MutableLiveData<Int>(1)
     val isEnd = MutableLiveData<Boolean>(true)
@@ -25,13 +36,13 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
     val totalCount = MutableLiveData<Int>(0)
     val isLoading = MutableLiveData<Boolean>(false)
 
-    private val _bookList = MutableLiveData<MutableList<BookData?>>()
-    val bookList: MutableLiveData<MutableList<BookData?>> get() = _bookList
+     val _bookList = MutableLiveData<MutableList<BookData?>>()
+    val bookList: LiveData<MutableList<BookData?>> get() = _bookList
+
 
     init {
         isProgressVisible.value = false
         keyword.value = "가"
-        fragmentType.value = FragmentEnum.SearchMain
         loadError.value = ""
 
         page.value = 1
@@ -41,6 +52,7 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
         isLoading.value = false
 
         _bookList.value = mutableListOf()
+
     }
 
     fun getAllList() {
@@ -53,11 +65,11 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
         val job = viewModelScope.launch(Dispatchers.IO) { getSearchBookList() }
     }
 
-    suspend fun getSearchBookList(query: String = keyword.value ?: "가",
-                                  sort: String = "accuracy",
-                                  page: Int = this.page.value ?: 1,
-                                  size: Int = 50, // TODO: replace fixed value
-                                  target: String = "title")
+    private suspend fun getSearchBookList(query: String = keyword.value ?: "가",
+                                          sort: String = "accuracy",
+                                          page: Int = this.page.value ?: 1,
+                                          size: Int = 10, // TODO: replace fixed value
+                                          target: String = "title")
     {
             withContext(Dispatchers.Main) {
                 isLoading.value = true
@@ -71,20 +83,21 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
             }
 
             // request search api
-            val response = repository.getSearchBookList(query, sort, page, size, target)
+            val response = ApiRepository.getSearchBookList(query, sort, page, size, target)
 
             withContext(Dispatchers.Main) {
                 // success case
-                if (response.documents != null) {
+
+                if (response.documents.isNotEmpty()) {
                     val documents = response.documents
                     val meta = response.meta
                     if (documents.isNotEmpty()) {
                         if (bookList.value == null) {
-                            bookList.value = (documents as MutableList<BookData?>)
+                            _bookList.value = (documents as MutableList<BookData?>)
                         } else {
                             val list = bookList.value
                             list!!.addAll(documents)
-                            bookList.value = list
+                            _bookList.value = list!!
                         }
                     }
                     Log.d("yezzz viewmodel", "meta: ${meta}")
@@ -108,19 +121,25 @@ class MainViewModel(private val repository: ApiRepository): ViewModel() {
             }
     }
 
-    fun onError(message: String) {
+    private fun onError(message: String) {
         loadError.value = message
         isProgressVisible.value = false
         isLoading.value = false
     }
 
-    fun clearSearchBookList() {
-        bookList.value = mutableListOf()
+    private fun clearSearchBookList() {
+        _bookList.value = mutableListOf()
     }
 
 }
 
 
+/**
+ * comments
+ * TODO: DI
+ * - DI 주입하는 경우 repository 넘겨서 사용
+ */
+/*
 // Parameter가 있는 ViewModel
 class MainViewModelFactory(private val repository: ApiRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -128,3 +147,4 @@ class MainViewModelFactory(private val repository: ApiRepository) : ViewModelPro
         throw IllegalAccessException("Unknown Viewmodel Class")
     }
 }
+*/

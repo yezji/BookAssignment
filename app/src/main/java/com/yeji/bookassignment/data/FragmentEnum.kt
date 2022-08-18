@@ -4,9 +4,10 @@ import android.util.SparseArray
 import com.yeji.bookassignment.ui.SearchDetailFragment
 import com.yeji.bookassignment.ui.SearchMainFragment
 
+@Deprecated("useless")
 enum class FragmentEnum(val No: Int, val resString: String, val barType: BarTypeEnum) {
-    SearchMain(0, SearchMainFragment::class.java.toString(), BarTypeEnum.Search)
-    , SearchDetail(1, SearchDetailFragment::class.java.toString(), BarTypeEnum.Normal)
+    SearchMain(0, SearchMainFragment::class.java.simpleName, BarTypeEnum.Search)
+    , SearchDetail(1, SearchDetailFragment::class.java.simpleName, BarTypeEnum.Normal)
     ;
 
     companion object {

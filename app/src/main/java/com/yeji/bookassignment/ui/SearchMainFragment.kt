@@ -22,9 +22,8 @@ import com.yeji.bookassignment.viewmodel.MainViewModel
 import kotlinx.coroutines.*
 
 class SearchMainFragment : Fragment() {
-    companion object {
-        private val TAG = SearchMainFragment::class.java.simpleName
-    }
+    private val TAG = SearchMainFragment::class.java.simpleName
+
     private var _binding: FragmentSearchMainBinding? = null
     private val binding: FragmentSearchMainBinding get() = requireNotNull(_binding)
 
@@ -54,7 +53,6 @@ class SearchMainFragment : Fragment() {
 
         // set adapter
         setAdapter()
-//        setPagingAdapter()
         initScrollListener()
 
         initUI()
@@ -62,21 +60,33 @@ class SearchMainFragment : Fragment() {
     }
 
     fun initUI() {
-        viewModel.bookList.observe(requireActivity(), Observer<MutableList<BookData?>> { bookList ->
+        /**
+         * comments
+         * - fragment에서 livedata observe할 때 requireActivity() 사용하면 위험하다.
+         *   fragment는 onCreateView나 onViewCreated의 생명 주기를 가지는데 activity의 생명주기를 따라간다면 IllegalStateException 발생할 수 있기 때문 (내부구현 참조)
+             -> viewLifecycleOwner 사용하기!
+         */
+        viewModel.bookList.observe(viewLifecycleOwner) { bookList ->
 //            bookList.apply {
 //                Log.d("yezzz mainfragment", "call bookList submit")
 //                adapter.submitList(bookList)
 //            }
 
-            binding.rvResultMain.adapter = adapter.apply {
-                Log.d("yezzz mainfragment", "call adapter submit")
-                submitList(bookList)
-            }
-        })
+            //binding.rvResultMain.adapter = adapter.apply {
+            Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
+            /**
+             * comments
+             * - submitList에서는 List 타입으로만 받는다. MutableList를 넘기려했기에 문제 생겼다.
+                 그래서 immutable 스타일로 바꾸어 자연스럽게 List 타입으로 들어가도록 해야 한다.
+            */
+            adapter.submitList(bookList.toList())
+            //}
+        }
 
         binding.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 // 문자열 입력을 완료했을 때 문자열 반환
+                //viewModel.setQuery()
                 viewModel.keyword.value = query
 
                 // scroll to top
@@ -99,24 +109,8 @@ class SearchMainFragment : Fragment() {
         binding.rvResultMain.layoutManager = layoutManager
         binding.rvResultMain.addItemDecoration(DividerItemDecoration(binding.rvResultMain.context, layoutManager.orientation))
 
-        adapter = BookResultAdapter(
-            { bookData, position -> bookItemClick(bookData, position) }
-        )
+        adapter = BookResultAdapter { bookData, position -> bookItemClick(bookData, position) }
         adapter.setHasStableIds(true)
-        binding.rvResultMain.adapter = adapter
-
-    }
-    fun setPagingAdapter() {
-        layoutManager = LinearLayoutManager(context)
-        binding.rvResultMain.layoutManager = layoutManager
-        binding.rvResultMain.addItemDecoration(DividerItemDecoration(binding.rvResultMain.context, layoutManager.orientation))
-
-        val adapter = BookResultPagingAdapter(
-            { bookData, position -> bookItemClick(bookData, position) }
-        )
-        binding.rvResultMain.adapter?.apply {
-            setHasStableIds(true)
-        }
         binding.rvResultMain.adapter = adapter
 
     }
@@ -136,7 +130,7 @@ class SearchMainFragment : Fragment() {
                         // 마지막 페이지가 아니라면
                         if (viewModel.isEnd.value == false && viewModel.isLoading.value == false) {
 
-                            CoroutineScope(Dispatchers.Main).launch {
+                            lifecycleScope.launch {
                                 viewModel.isLoading.value = true
                                 viewModel.page.value = viewModel.page.value?.plus(1)
                                 Log.d("yezzz scroll listener", "page: ${viewModel.page.value}")
@@ -171,7 +165,7 @@ class SearchMainFragment : Fragment() {
     }
 
     fun bookItemClick(bookData: BookData?, position: Int) {
-        val dest = SearchDetailFragment::class.java.simpleName.toString()
+        val dest = SearchDetailFragment::class.java.simpleName
         setFragmentResult(dest, bundleOf("itemPosition" to position))
 
         parentFragmentManager.beginTransaction()

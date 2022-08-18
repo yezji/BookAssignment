@@ -15,6 +15,15 @@
         tools:context=".ui.MainActivity"
         >
 
+        <!-- comments
+        TODO: FragmentContainerView로 교체
+        - Fragment에서 FrameLayout -> FragmentContainerView 사용
+            - Fragment 전용으로 설계된 컨테이너
+                - Fragment transaction을 안정적으로 처리할 수 있고, 동작 조정 기능 추가
+                - 부드러운 애니메이션
+            - FrameLayout은 Fragment의 z-ordering을 처리하는데 문제가 있다.
+                - z-ordering이 보장되면 슬라이딩 애니메이션 등을 자연스럽게 처리하여 볼 수 있다.
+      여 -->
         <FrameLayout
             android:id="@+id/fl_main_content"
             android:layout_width="0dp"

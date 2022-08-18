@@ -15,9 +15,8 @@ import com.yeji.bookassignment.util.LocalizeCurrency
 import com.yeji.bookassignment.viewmodel.MainViewModel
 
 class SearchDetailFragment : Fragment() {
-    companion object {
-        private val TAG = SearchDetailFragment::class.java.simpleName
-    }
+    private val TAG = SearchDetailFragment::class.java.simpleName
+
     private var _binding: FragmentSearchDetailBinding? = null
     private val binding: FragmentSearchDetailBinding get() = requireNotNull(_binding)
 
@@ -43,8 +42,6 @@ class SearchDetailFragment : Fragment() {
             bookData = viewModel.bookList.value?.get(position)!!
             initUI(position)
         }
-
-//        viewModel.fragmentType.value = FragmentEnum.SearchDetail
     }
 
     private fun initUI(position: Int) {
@@ -69,7 +66,7 @@ class SearchDetailFragment : Fragment() {
             val list = viewModel.bookList.value
             if (list!!.isNotEmpty()) {
                 list[position] = bookData
-                viewModel.bookList.value = list
+                viewModel._bookList.value = list
                 setLikeResource()
 
                 Log.d("yezzz", "pos: $position, like: ${viewModel.bookList.value!!.get(position)!!.like}")
