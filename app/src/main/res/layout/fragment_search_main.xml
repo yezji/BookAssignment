@@ -25,6 +25,7 @@
                 android:id="@+id/sv_search_main"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:inputType="text"
                 android:imeOptions="actionDone"
                 app:defaultQueryHint="@string/search_main_hint"
                 app:searchIcon="@drawable/ic_search_24"
