@@ -1,23 +1,22 @@
 package com.yeji.bookassignment.data
 
-import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
 @Serializable
 data class BookData(
-    @SerialName("title") var title: String = "",
-    @SerialName("contents") var contents: String = "",
-    @SerialName("url") var url: String = "",
-    @SerialName("isbn") var isbn: String = "",
-    @SerialName("datetime") var datetime: String = "",
-    @SerialName("authors") var authors: List<String> = listOf(),
-    @SerialName("publisher") var publisher: String = "",
-    @SerialName("translators") var translators: List<String> = listOf(),
-    @SerialName("price") var price: Int = 0,
-    @SerialName("sale_price") var sale_price: Int = 0,
-    @SerialName("thumbnail") var thumbnail: String = "",
-    @SerialName("status") var status: String = "",
-    @SerialName("like") var like: Boolean = false
+    @SerialName("title") val title: String?,
+    @SerialName("contents") val contents: String?,
+    @SerialName("url") val url: String?,
+    @SerialName("isbn") val isbn: String?,
+    @SerialName("datetime") val datetime: String?,
+    @SerialName("authors") val authors: List<String>?,
+    @SerialName("publisher") val publisher: String?,
+    @SerialName("translators") val translators: List<String>?,
+    @SerialName("price") val price: Double?,
+    @SerialName("sale_price") val sale_price: Int?,
+    @SerialName("thumbnail") val thumbnail: String?,
+    @SerialName("status") val status: String?,
+    var like: Boolean = false
 )

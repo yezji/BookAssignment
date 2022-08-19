@@ -18,13 +18,13 @@ class MainActivity : AppCompatActivity() {
 
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding get() = requireNotNull(_binding)
-   // private lateinit var viewModel: MainViewModel
     private val viewModel by viewModels<MainViewModel>()
+   // private lateinit var viewModel: MainViewModel
 
     private lateinit var transaction: FragmentTransaction
     private lateinit var searchMainFragment: SearchMainFragment
 
-    private var backButtonTime = 0L
+//    private var backButtonTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

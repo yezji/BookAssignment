@@ -13,6 +13,7 @@ import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.databinding.FragmentSearchDetailBinding
 import com.yeji.bookassignment.util.LocalizeCurrency
 import com.yeji.bookassignment.viewmodel.MainViewModel
+import kotlinx.serialization.SerialName
 
 class SearchDetailFragment : Fragment() {
     private val TAG = SearchDetailFragment::class.java.simpleName
@@ -22,7 +23,21 @@ class SearchDetailFragment : Fragment() {
 
     private val viewModel: MainViewModel by activityViewModels()
     private var position: Int = 0
-    private var bookData: BookData = BookData()
+    private var bookData: BookData = BookData(
+        title = null,
+        contents = null,
+        url = null,
+        isbn = null,
+        datetime = null,
+        authors = null,
+        publisher = null,
+        translators = null,
+        price = null,
+        sale_price = null,
+        thumbnail = null,
+        status = null,
+        like = false
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,6 +52,7 @@ class SearchDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // receive bundle data
         setFragmentResultListener(TAG) { requestKey: String, bundle: Bundle ->
             position = bundle.getInt("itemPosition")
             bookData = viewModel.bookList.value?.get(position)!!
@@ -53,24 +69,25 @@ class SearchDetailFragment : Fragment() {
             .into(binding.ivDetailBook)
 
         binding.tvDetailBookTitle.text = bookData.title
-        binding.tvDetailPublishedDate.text = bookData.datetime.substring(0, 10)
+        binding.tvDetailPublishedDate.text = bookData.datetime?.substring(0, 10) ?: "0000-00-00"
         binding.tvDetailBookPublisher.text = bookData.publisher
         binding.tvDetailBookDescription.text = bookData.contents
-        binding.tvDetailBookPrice.text = LocalizeCurrency.getCurrency(bookData.price.toDouble())
+        binding.tvDetailBookPrice.text = LocalizeCurrency.getCurrency(bookData.price as Double)
         setLikeResource()
 
         binding.ibNormalLike.setOnClickListener {
+            // toggle like status
             var status = viewModel.bookList.value?.get(position)?.like
             status = !status!!
             bookData.like = status
-            val list = viewModel.bookList.value
-            if (list!!.isNotEmpty()) {
-                list[position] = bookData
-                viewModel._bookList.value = list
-                setLikeResource()
 
-                Log.d("yezzz", "pos: $position, like: ${viewModel.bookList.value!!.get(position)!!.like}")
-            }
+            val mutableList = viewModel.bookList.value?.toMutableList() ?: mutableListOf()
+            mutableList[position] = bookData
+            viewModel.setBookList(mutableList.toList())
+
+            setLikeResource()
+
+            Log.d("yezzz", "pos: $position, like: ${viewModel.bookList.value!![position]!!.like}")
         }
         binding.ibNormalBack.setOnClickListener {
             parentFragmentManager.popBackStack()

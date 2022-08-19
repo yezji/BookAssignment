@@ -3,80 +3,106 @@ package com.yeji.bookassignment.viewmodel
 import android.util.Log
 import androidx.lifecycle.*
 import com.yeji.bookassignment.data.BookData
-import com.yeji.bookassignment.data.FragmentEnum
-import com.yeji.bookassignment.data.Response
 import com.yeji.bookassignment.repository.ApiRepository
 import kotlinx.coroutines.*
-import retrofit2.Call
-import retrofit2.Callback
 
 //class MainViewModel(private val repository: ApiRepository): ViewModel() {
 class MainViewModel: ViewModel() {
 
     /**
      * comments
-     TODO: Backing Property 방식 적용하기
-     * - Backing Property 방식 사용하기
+     * - LiveData Backing Property 방식 사용하기
         //    private val _keyword = MutableLiveData<String>()
         //    val keyword: LiveData<String>
         //    get() = _keyword
-     TODO: Immutable 스타일로 사용하기
      * - Immutable 스타일로 사용하기
         // private val books = mutableListOf<BookData>()
      */
-    val keyword = MutableLiveData<String>()
+    private val _keyword = MutableLiveData<String>()
+    val keyword : LiveData<String> get() = _keyword
+    fun setKeyword(query: String?) { _keyword.value = query ?: "가" }
 
-    val isProgressVisible = MutableLiveData<Boolean>()
-    val loadError = MutableLiveData<String?>()
+    private val _bookList = MutableLiveData<List<BookData?>>()
+    val bookList: LiveData<List<BookData?>> get() = _bookList
+    fun setBookList(bookList: List<BookData?>) { _bookList.value = bookList }
 
     // paging
-    val page = MutableLiveData<Int>(1)
-    val isEnd = MutableLiveData<Boolean>(true)
-    val pageableCount = MutableLiveData<Int>(0)
-    val totalCount = MutableLiveData<Int>(0)
-    val isLoading = MutableLiveData<Boolean>(false)
+    private val _page = MutableLiveData<Int>(1)
+    val page : LiveData<Int> get() = _page
+    fun setPage(pageNumber: Int) { _page.value = pageNumber }
+    fun incrementPage() = run { _page.value?.plus(1) } // TODO: run 맞는지 확인
 
-     val _bookList = MutableLiveData<MutableList<BookData?>>()
-    val bookList: LiveData<MutableList<BookData?>> get() = _bookList
+    private val _isEnd = MutableLiveData<Boolean>(true)
+    val isEnd : LiveData<Boolean> get() = _isEnd
+    fun setIsEnd(flag: Boolean?) { _isEnd.value = flag ?: true }
+
+    private val _pageableCount = MutableLiveData<Int>(0)
+    val pageableCount : LiveData<Int> get() = _pageableCount
+    fun setPageableCount(count: Int?) { _pageableCount.value = count ?: 0 }
+
+    private val _totalCount = MutableLiveData<Int>(0)
+    val totalCount : LiveData<Int> get() = _totalCount
+    fun setTotalCount(count: Int?) { _totalCount.value = count ?: 0 }
+
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading : LiveData<Boolean> get() = _isLoading
+    fun setIsLoading(flag: Boolean?) { _isLoading.value = flag ?: false }
+
+    private val _loadError = MutableLiveData<String?>()
+    val loadError : LiveData<String?> get() = _loadError
+    fun setLoadError(message: String?) { _loadError.value = message ?: "" }
+
+    private val _isProgressVisible = MutableLiveData<Boolean>()
+    val isProgressVisible : LiveData<Boolean> get() = _isProgressVisible
+    fun setIsProgressVisible(flag: Boolean?) { _isProgressVisible.value = flag ?: false }
+
 
 
     init {
-        isProgressVisible.value = false
-        keyword.value = "가"
-        loadError.value = ""
-
-        page.value = 1
-        isEnd.value = true
-        pageableCount.value = 0
-        totalCount.value = 0
-        isLoading.value = false
-
+        _keyword.value = "가"
         _bookList.value = mutableListOf()
 
+        _page.value = 1
+        _isEnd.value = true
+        _pageableCount.value = 0
+        _totalCount.value = 0
+        _isLoading.value = false
+        _loadError.value = ""
+        _isProgressVisible.value = false
     }
 
     fun getAllList() {
         clearSearchBookList()
-        page.value = 1
-        val job = viewModelScope.launch(Dispatchers.IO) { getSearchBookList() }
+        setPage(1)
+        /**
+         * comments
+         * - retrofit에서 기본적으로 IO thread 사용해서 통신하고 있기에 안넣어줘도 무방하다.
+         *   - 옛날 자바코드일 때 흔적이다.
+         * - viewModelScope의 기본은 Dispatchers.Main.immediate이다.
+         *   - Main.immediate는 순서 보장 O, 그냥 Main은 순서보장 X
+         *   - Dispatcher.Main은 단순히 Context Switching에서 필요할 경우에 사용
+         *      - ex. Dispatchers.IO를 사용하는 CoroutineScope 내에서는 withContext를 이용해서 context switching이 가능한데, withContext(Dispatchers.Main)을 사용하나, withCOntext(Dispatchers.Main.immediate)을 사용하나 결과는 동일하기에 이럴 경우 Dispatchers.Main을 사용하면 된다.
+         */
+        viewModelScope.launch { getSearchBookList() }
 }
 
     fun getMoreList() {
-        val job = viewModelScope.launch(Dispatchers.IO) { getSearchBookList() }
+        viewModelScope.launch { getSearchBookList() }
     }
 
-    private suspend fun getSearchBookList(query: String = keyword.value ?: "가",
-                                          sort: String = "accuracy",
-                                          page: Int = this.page.value ?: 1,
-                                          size: Int = 10, // TODO: replace fixed value
-                                          target: String = "title")
+    private suspend fun getSearchBookList(
+        query: String = keyword.value ?: "가",
+        sort: String = "accuracy",
+        page: Int? = this.page.value,
+        size: Int = 10, // TODO: replace fixed value
+        target: String = "title")
     {
             withContext(Dispatchers.Main) {
-                isLoading.value = true
-//                isProgressVisible.value = true
+                setIsLoading(true)
+//                setIsProgressVisible(true)
 
                 if (keyword.value.equals("")) {
-                    keyword.value = "가"
+                    setKeyword("가")
                 }
                 Log.d("yezzz viewmodel", "isLoading: ${isLoading.value.toString()}")
                 Log.d("yezzz viewmodel", "query: $query, page: $page")
@@ -87,34 +113,28 @@ class MainViewModel: ViewModel() {
 
             withContext(Dispatchers.Main) {
                 // success case
-
-                if (response.documents.isNotEmpty()) {
+                if (response.documents != null) {
                     val documents = response.documents
                     val meta = response.meta
                     if (documents.isNotEmpty()) {
-                        if (bookList.value == null) {
-                            _bookList.value = (documents as MutableList<BookData?>)
-                        } else {
-                            val list = bookList.value
-                            list!!.addAll(documents)
-                            _bookList.value = list!!
-                        }
+                        val list = bookList.value?.toMutableList() ?: mutableListOf()
+                        list.addAll(documents)
+                        setBookList(list)
                     }
                     Log.d("yezzz viewmodel", "meta: ${meta}")
+                    setIsEnd(meta?.is_end)
+                    setPageableCount(meta?.pageable_count)
+                    setTotalCount(meta?.total_count)
 
-                    isEnd.value = meta.is_end
-                    pageableCount.value = meta.pageable_count
-                    totalCount.value = meta.total_count
-
-                    loadError.value = ""
+                    setLoadError(null)
                 }
                 // failure case
                 else {
                     onError("err msg: ${response.errorType}")
                 }
 
+                setIsLoading(false)
 
-                isLoading.value = false
                 Log.d("yezzz viewModel", "isLoading: ${isLoading.value}")
                 Log.d("yezzz viewModel", "page: ${page}")
 
@@ -122,13 +142,13 @@ class MainViewModel: ViewModel() {
     }
 
     private fun onError(message: String) {
-        loadError.value = message
-        isProgressVisible.value = false
-        isLoading.value = false
+        setLoadError(message)
+        setIsLoading(false)
+        setIsProgressVisible(false)
     }
 
     private fun clearSearchBookList() {
-        _bookList.value = mutableListOf()
+        setBookList(mutableListOf())
     }
 
 }

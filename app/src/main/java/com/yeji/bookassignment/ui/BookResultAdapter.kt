@@ -69,6 +69,7 @@ class BookResultAdapter(
         list.add(null)
         /**
          * comments
+         * TODO: submitList view쪽에서 하기
          * - submitList()는 view쪽에서 해주는 것이 좋다.
          */
         submitList(list)
@@ -93,20 +94,20 @@ class BookResultAdapter(
      * - inner class보단 class로 빼기
      *   - itemClick listener도 클래스 인자로 넘겨주는 방식으로 사용
      *   - init block으로 넣어주어도 좋다.
-     * - nullable type 사용 시 .let을 사용하는 것이 권장되는 방법
+     * - kotlin에서 nullable type 사용 시 .let을 사용하는 것이 권장되는 방법
      *   - let, run, apply, also, with 차이 제대로 알고 사용하기
      */
     class BookResultViewHolder(val binding: ViewMainBookItemBinding, val itemClick: (BookData, Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
         private var bookData: BookData? = null
         init {
-            binding.root.setOnClickListener {
-                bookData?.let{
-                    itemClick(it, absoluteAdapterPosition)
+            binding.root.setOnClickListener { it ->
+                bookData?.let{ data ->
+                    itemClick(data, absoluteAdapterPosition)
                 }
             }
         }
         fun bind(bookData: BookData?, position: Int) {
-            //this.bookData = bookData
+            this.bookData = bookData
             binding.executePendingBindings() // 데이터가 수정되면 즉각 바인딩
 
             Glide.with(itemView.context)
@@ -119,21 +120,21 @@ class BookResultAdapter(
             binding.tvMainBookTitle.text = bookData?.title ?: "null"
             binding.tvMainBookPublishedDate.text = bookData?.datetime?.substring(0, 10) ?: "null"
             binding.tvMainBookDescription.text = bookData?.contents ?: "null"
-            binding.tvMainBookPrice.text = bookData?.price?.let { LocalizeCurrency.getCurrency(it.toDouble()) }
+            binding.tvMainBookPrice.text = bookData?.price?.let { LocalizeCurrency.getCurrency(it) }
 
 
             if (bookData?.like == true) binding.ibMainLike.setImageResource(R.drawable.ic_favorite_filled_24)
             else binding.ibMainLike.setImageResource(R.drawable.ic_favorite_empty_24)
             binding.ibMainLike.setOnClickListener {
-                if (bookData != null) {
-                    itemClick(bookData, position)
+                bookData?.let { data ->
+                    itemClick(data, position) // 함수에서 position 따로 안넘겨주고 absoluteAdapterPosition으로 사용해도 된다.
                 }
             }
 
         }
     }
 
-    class LoadingViewHolder(val binding: ViewMainBookItemLoadingBinding) : RecyclerView.ViewHolder(binding.root) {
+    class LoadingViewHolder(binding: ViewMainBookItemLoadingBinding) : RecyclerView.ViewHolder(binding.root) {
 //        fun bind() {
 //            // do nothing - displayed progressbar
 //        }

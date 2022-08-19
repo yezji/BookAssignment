@@ -10,7 +10,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,7 +28,6 @@ class SearchMainFragment : Fragment() {
 
     private val viewModel: MainViewModel by activityViewModels()
     private lateinit var adapter: BookResultAdapter
-//    private lateinit var adapter: BookResultPagingAdapter
     private lateinit var layoutManager: LinearLayoutManager
 
     private lateinit var searchDetailFragment: SearchDetailFragment
@@ -62,6 +60,7 @@ class SearchMainFragment : Fragment() {
     fun initUI() {
         /**
          * comments
+         * TODO: fragment viewLIfecycleOwner 내용 작성
          * - fragment에서 livedata observe할 때 requireActivity() 사용하면 위험하다.
          *   fragment는 onCreateView나 onViewCreated의 생명 주기를 가지는데 activity의 생명주기를 따라간다면 IllegalStateException 발생할 수 있기 때문 (내부구현 참조)
              -> viewLifecycleOwner 사용하기!
@@ -79,15 +78,14 @@ class SearchMainFragment : Fragment() {
              * - submitList에서는 List 타입으로만 받는다. MutableList를 넘기려했기에 문제 생겼다.
                  그래서 immutable 스타일로 바꾸어 자연스럽게 List 타입으로 들어가도록 해야 한다.
             */
-            adapter.submitList(bookList.toList())
+            adapter.submitList(bookList)
             //}
         }
 
         binding.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 // 문자열 입력을 완료했을 때 문자열 반환
-                //viewModel.setQuery()
-                viewModel.keyword.value = query
+                viewModel.setKeyword(query)
 
                 // scroll to top
 //                binding.scrollviewParent.smoothScrollBy(0, 0)
@@ -131,8 +129,8 @@ class SearchMainFragment : Fragment() {
                         if (viewModel.isEnd.value == false && viewModel.isLoading.value == false) {
 
                             lifecycleScope.launch {
-                                viewModel.isLoading.value = true
-                                viewModel.page.value = viewModel.page.value?.plus(1)
+                                viewModel.setIsLoading(true)
+                                viewModel.incrementPage()
                                 Log.d("yezzz scroll listener", "page: ${viewModel.page.value}")
 
                                 loadMore()
@@ -159,6 +157,7 @@ class SearchMainFragment : Fragment() {
             // load more items
             adapter.apply {
                 viewModel.getMoreList()
+                // TODO: submitList 따로?
                 submitList(viewModel.bookList.value)
             }
         }
