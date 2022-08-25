@@ -1,7 +1,6 @@
 package com.yeji.bookassignment
 
 import android.app.Application
-import com.yeji.bookassignment.repository.ApiRepository
 
 class App : Application() {
     /**

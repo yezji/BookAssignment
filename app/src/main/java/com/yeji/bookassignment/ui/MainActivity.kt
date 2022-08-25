@@ -7,9 +7,14 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.ActivityMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -58,19 +63,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUI() {
-        viewModel.keyword.observe(this) { keyword ->
-            Log.d("yezzz mainactivity", "keyword: $keyword")
-            viewModel.getAllList()
-        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                viewModel.keyword.collect { keyword ->
+                    Log.d("yezzz mainactivity", "keyword: $keyword")
+                    viewModel.getAllList()
+                }
 
-        viewModel.isProgressVisible.observe(this) { isVisible ->
-            // set progressBar visibility
-            binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
-        }
+                viewModel.isProgressVisible.collect { isVisible ->
+                    // set progressBar visibility
+                    binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
+                }
 
-        viewModel.loadError.observe(this) { errorMsg ->
-            if (!errorMsg.equals("")) Toast.makeText(this, "err: $errorMsg", Toast.LENGTH_SHORT).show()
+                viewModel.loadError.collect { errorMsg ->
+                    if (!errorMsg.equals("")) Toast.makeText(this@MainActivity, "err: $errorMsg", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
+//        viewModel.keyword.observe(this) { keyword ->
+//            Log.d("yezzz mainactivity", "keyword: $keyword")
+//            viewModel.getAllList()
+//        }
+//
+//        viewModel.isProgressVisible.observe(this) { isVisible ->
+//            // set progressBar visibility
+//            binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
+//        }
+//
+//        viewModel.loadError.observe(this) { errorMsg ->
+//            if (!errorMsg.equals("")) Toast.makeText(this, "err: $errorMsg", Toast.LENGTH_SHORT).show()
+//        }
 
     }
 

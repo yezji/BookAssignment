@@ -28,6 +28,7 @@
             android:id="@+id/sv_search_main"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:theme="@style/SearchViewStyle"
             android:inputType="text"
             android:imeOptions="actionDone"
             app:defaultQueryHint="@string/search_main_hint"

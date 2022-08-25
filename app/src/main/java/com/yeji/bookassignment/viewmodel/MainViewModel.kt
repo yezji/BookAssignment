@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.repository.ApiRepository
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 
 //class MainViewModel(private val repository: ApiRepository): ViewModel() {
 class MainViewModel: ViewModel() {
@@ -18,48 +19,94 @@ class MainViewModel: ViewModel() {
      * - Immutable 스타일로 사용하기
         // private val books = mutableListOf<BookData>()
      */
-    private val _keyword = MutableLiveData<String>()
-    val keyword : LiveData<String> get() = _keyword
-    fun setKeyword(query: String?) { _keyword.value = query ?: "가" }
+//    private val _keyword = MutableLiveData<String>()
+//    val keyword : LiveData<String> get() = _keyword
+//    fun setKeyword(query: String?) { _keyword.value = query ?: "가" }
+//
+//    private val _bookList = MutableLiveData<List<BookData?>>()
+//    val bookList: LiveData<List<BookData?>> get() = _bookList
+//    fun setBookList(bookList: List<BookData?>) { _bookList.value = bookList }
+//
+//    // paging
+//    private val _page = MutableLiveData<Int>(1)
+//    val page : LiveData<Int> get() = _page
+//    fun setPage(pageNumber: Int) { _page.value = pageNumber }
+//    fun incrementPage() = run { _page.value?.plus(1) } // TODO: run 맞는지 확인
+//
+//    private val _isEnd = MutableLiveData<Boolean>(true)
+//    val isEnd : LiveData<Boolean> get() = _isEnd
+//    fun setIsEnd(flag: Boolean?) { _isEnd.value = flag ?: true }
+//
+//    private val _pageableCount = MutableLiveData<Int>(0)
+//    val pageableCount : LiveData<Int> get() = _pageableCount
+//    fun setPageableCount(count: Int?) { _pageableCount.value = count ?: 0 }
+//
+//    private val _totalCount = MutableLiveData<Int>(0)
+//    val totalCount : LiveData<Int> get() = _totalCount
+//    fun setTotalCount(count: Int?) { _totalCount.value = count ?: 0 }
+//
+//    private val _isLoading = MutableLiveData<Boolean>(false)
+//    val isLoading : LiveData<Boolean> get() = _isLoading
+//    fun setIsLoading(flag: Boolean?) { _isLoading.value = flag ?: false }
+//
+//    private val _loadError = MutableLiveData<String?>()
+//    val loadError : LiveData<String?> get() = _loadError
+//    fun setLoadError(message: String?) { _loadError.value = message ?: "" }
+//
+//    private val _isProgressVisible = MutableLiveData<Boolean>()
+//    val isProgressVisible : LiveData<Boolean> get() = _isProgressVisible
+//    fun setIsProgressVisible(flag: Boolean?) { _isProgressVisible.value = flag ?: false }
 
-    private val _bookList = MutableLiveData<List<BookData?>>()
-    val bookList: LiveData<List<BookData?>> get() = _bookList
+    /**
+     * TODO: LiveData StateFlow로 교체
+     * StateFlow
+     */
+
+    private val _keyword = MutableStateFlow<String>("가")
+//    private val _keyword = MutableStateFlow<String>("") // TODO: restore
+    val keyword : StateFlow<String> get() = _keyword
+    fun setKeyword(query: String?) { _keyword.value = query ?: "가" }
+//    fun setKeyword(query: String?) { _keyword.value = query ?: "" } // TODO: restore
+
+    private val _bookList = MutableStateFlow<List<BookData?>>(mutableListOf())
+    val bookList: StateFlow<List<BookData?>> get() = _bookList
     fun setBookList(bookList: List<BookData?>) { _bookList.value = bookList }
 
     // paging
-    private val _page = MutableLiveData<Int>(1)
-    val page : LiveData<Int> get() = _page
+    private val _page = MutableStateFlow<Int>(1)
+    val page : StateFlow<Int> get() = _page
     fun setPage(pageNumber: Int) { _page.value = pageNumber }
-    fun incrementPage() = run { _page.value?.plus(1) } // TODO: run 맞는지 확인
+    fun incrementPage() = run { _page.value.plus(1) } // TODO: run 맞는지 확인
 
-    private val _isEnd = MutableLiveData<Boolean>(true)
-    val isEnd : LiveData<Boolean> get() = _isEnd
+    private val _isEnd = MutableStateFlow<Boolean>(true)
+    val isEnd : StateFlow<Boolean> get() = _isEnd
     fun setIsEnd(flag: Boolean?) { _isEnd.value = flag ?: true }
 
-    private val _pageableCount = MutableLiveData<Int>(0)
-    val pageableCount : LiveData<Int> get() = _pageableCount
+    private val _pageableCount = MutableStateFlow<Int>(0)
+    val pageableCount : StateFlow<Int> get() = _pageableCount
     fun setPageableCount(count: Int?) { _pageableCount.value = count ?: 0 }
 
-    private val _totalCount = MutableLiveData<Int>(0)
-    val totalCount : LiveData<Int> get() = _totalCount
+    private val _totalCount = MutableStateFlow<Int>(0)
+    val totalCount : StateFlow<Int> get() = _totalCount
     fun setTotalCount(count: Int?) { _totalCount.value = count ?: 0 }
 
-    private val _isLoading = MutableLiveData<Boolean>(false)
-    val isLoading : LiveData<Boolean> get() = _isLoading
+    private val _isLoading = MutableStateFlow<Boolean>(false)
+    val isLoading : StateFlow<Boolean> get() = _isLoading
     fun setIsLoading(flag: Boolean?) { _isLoading.value = flag ?: false }
 
-    private val _loadError = MutableLiveData<String?>()
-    val loadError : LiveData<String?> get() = _loadError
+    private val _loadError = MutableStateFlow<String?>("")
+    val loadError : StateFlow<String?> get() = _loadError
     fun setLoadError(message: String?) { _loadError.value = message ?: "" }
 
-    private val _isProgressVisible = MutableLiveData<Boolean>()
-    val isProgressVisible : LiveData<Boolean> get() = _isProgressVisible
+    private val _isProgressVisible = MutableStateFlow<Boolean>(false)
+    val isProgressVisible : StateFlow<Boolean> get() = _isProgressVisible
     fun setIsProgressVisible(flag: Boolean?) { _isProgressVisible.value = flag ?: false }
 
 
 
     init {
         _keyword.value = "가"
+//        _keyword.value = "" // TODO: restore
         _bookList.value = mutableListOf()
 
         _page.value = 1
@@ -92,35 +139,36 @@ class MainViewModel: ViewModel() {
 
     private suspend fun getSearchBookList(
         query: String = keyword.value ?: "가",
+//        query: String = keyword.value ?: "", // TODO: restore
         sort: String = "accuracy",
         page: Int? = this.page.value,
         size: Int = 10, // TODO: replace fixed value
         target: String = "title")
     {
-            withContext(Dispatchers.Main) {
-                setIsLoading(true)
-//                setIsProgressVisible(true)
+            setIsLoading(true)
+        //                setIsProgressVisible(true)
 
-                if (keyword.value.equals("")) {
-                    setKeyword("가")
-                }
-                Log.d("yezzz viewmodel", "isLoading: ${isLoading.value.toString()}")
-                Log.d("yezzz viewmodel", "query: $query, page: $page")
+            if (keyword.value.equals("")) {
+                setKeyword("가") // TODO: restore
             }
+            Log.d("yezzz viewmodel", "isLoading: ${isLoading.value.toString()}")
+            Log.d("yezzz viewmodel", "query: $query, page: $page")
+
 
             // request search api
-            val response = ApiRepository.getSearchBookList(query, sort, page, size, target)
-
-            withContext(Dispatchers.Main) {
-                // success case
-                if (response.documents != null) {
-                    val documents = response.documents
-                    val meta = response.meta
+            val responseFlow = ApiRepository.getSearchBookListFlow(query, sort, page, size, target)
+            responseFlow
+                .collect { flow ->
+                if (flow.documents != null) {
+                    // success case
+                    val documents = flow.documents
+                    val meta = flow.meta
                     if (documents.isNotEmpty()) {
-                        val list = bookList.value?.toMutableList() ?: mutableListOf()
+                        val list = bookList.value.toMutableList()
                         list.addAll(documents)
                         setBookList(list)
                     }
+                    Log.d("yezzz viewmodel", "documents: ${documents}")
                     Log.d("yezzz viewmodel", "meta: ${meta}")
                     setIsEnd(meta?.is_end)
                     setPageableCount(meta?.pageable_count)
@@ -128,9 +176,9 @@ class MainViewModel: ViewModel() {
 
                     setLoadError(null)
                 }
-                // failure case
                 else {
-                    onError("err msg: ${response.errorType}")
+                    // failure case
+                    onError("err msg: ${ flow.errorType}")
                 }
 
                 setIsLoading(false)

@@ -10,7 +10,9 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,6 +21,8 @@ import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.FragmentSearchMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
 
 class SearchMainFragment : Fragment() {
     private val TAG = SearchMainFragment::class.java.simpleName
@@ -60,12 +64,21 @@ class SearchMainFragment : Fragment() {
     fun initUI() {
         /**
          * comments
-         * TODO: fragment viewLIfecycleOwner 내용 작성
          * - fragment에서 livedata observe할 때 requireActivity() 사용하면 위험하다.
          *   fragment는 onCreateView나 onViewCreated의 생명 주기를 가지는데 activity의 생명주기를 따라간다면 IllegalStateException 발생할 수 있기 때문 (내부구현 참조)
              -> viewLifecycleOwner 사용하기!
          */
-        viewModel.bookList.observe(viewLifecycleOwner) { bookList ->
+        lifecycleScope.launch {
+            // repeatOnLifecycle을 하면 start, stop 마다 자동으로 구독을 중지하고 이어간다.
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.bookList.collect { bookList ->
+                    Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
+                    adapter.submitList(bookList)
+                }
+            }
+
+        }
+        /*viewModel.bookList.observe(viewLifecycleOwner) { bookList ->
 //            bookList.apply {
 //                Log.d("yezzz mainfragment", "call bookList submit")
 //                adapter.submitList(bookList)
@@ -73,14 +86,14 @@ class SearchMainFragment : Fragment() {
 
             //binding.rvResultMain.adapter = adapter.apply {
             Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
-            /**
+            *//**
              * comments
              * - submitList에서는 List 타입으로만 받는다. MutableList를 넘기려했기에 문제 생겼다.
                  그래서 immutable 스타일로 바꾸어 자연스럽게 List 타입으로 들어가도록 해야 한다.
-            */
+            *//*
             adapter.submitList(bookList)
             //}
-        }
+        }*/
 
         binding.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {

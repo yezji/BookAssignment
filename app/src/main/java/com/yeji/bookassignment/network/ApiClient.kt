@@ -3,7 +3,6 @@ package com.yeji.bookassignment.network
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
@@ -54,13 +53,13 @@ object ApiClient {
 
     // retrofit instance
     @OptIn(ExperimentalSerializationApi::class)
-    val retrofit: ApiService = Retrofit.Builder()
+    val retrofit: ApiInterface = Retrofit.Builder()
         .baseUrl(API_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
 //        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
-        .create(ApiService::class.java)
+        .create(ApiInterface::class.java)
 
 
 }
