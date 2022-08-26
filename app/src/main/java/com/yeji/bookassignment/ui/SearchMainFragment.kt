@@ -71,9 +71,11 @@ class SearchMainFragment : Fragment() {
         lifecycleScope.launch {
             // repeatOnLifecycle을 하면 start, stop 마다 자동으로 구독을 중지하고 이어간다.
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.bookList.collect { bookList ->
-                    Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
-                    adapter.submitList(bookList)
+                launch {
+                    viewModel.bookList.collect { bookList ->
+                        Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
+                        adapter.submitList(bookList)
+                    }
                 }
             }
 
@@ -115,7 +117,7 @@ class SearchMainFragment : Fragment() {
 
     }
 
-    fun setAdapter() {
+    private fun setAdapter() {
         layoutManager = LinearLayoutManager(context)
         binding.rvResultMain.layoutManager = layoutManager
         binding.rvResultMain.addItemDecoration(DividerItemDecoration(binding.rvResultMain.context, layoutManager.orientation))
@@ -126,7 +128,7 @@ class SearchMainFragment : Fragment() {
 
     }
 
-    fun initScrollListener() {
+    private fun initScrollListener() {
         binding.rvResultMain.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -134,12 +136,12 @@ class SearchMainFragment : Fragment() {
                 val lastVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition()
                 val itemTotalPosition = (binding.rvResultMain.adapter?.itemCount ?: 1) - 1
 
-                if (viewModel.isLoading.value == false) {
+                if (!viewModel.isLoading.value) {
                     // 스크롤이 최하단에 도달하고, 리스트의 마지막이라면
                     if (!binding.rvResultMain.canScrollVertically(1)
                         && lastVisibleItemPosition == itemTotalPosition) {
                         // 마지막 페이지가 아니라면
-                        if (viewModel.isEnd.value == false && viewModel.isLoading.value == false) {
+                        if (!viewModel.isEnd.value && !viewModel.isLoading.value) {
 
                             lifecycleScope.launch {
                                 viewModel.setIsLoading(true)

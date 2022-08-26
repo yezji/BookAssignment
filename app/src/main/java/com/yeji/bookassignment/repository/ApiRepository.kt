@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.*
 object ApiRepository {
     private val TAG = ApiRepository::class.java.simpleName
 
-    //TODO: .single, .collect, .toList terminate 함수 더 알아보기
     suspend fun getSearchBookListFlow(
         query: String,
         sort: String?,

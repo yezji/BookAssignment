@@ -13,7 +13,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.ActivityMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -65,18 +64,28 @@ class MainActivity : AppCompatActivity() {
     private fun initUI() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
-                viewModel.keyword.collect { keyword ->
-                    Log.d("yezzz mainactivity", "keyword: $keyword")
-                    viewModel.getAllList()
+                launch {
+                    viewModel.keyword.collect { keyword ->
+                        Log.d("yezzz mainactivity", "keyword: $keyword")
+                        viewModel.getAllList()
+                    }
                 }
 
-                viewModel.isProgressVisible.collect { isVisible ->
-                    // set progressBar visibility
-                    binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
+                launch {
+                    viewModel.isProgressVisible.collect { isVisible ->
+                        // set progressBar visibility
+                        binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
+                    }
                 }
 
-                viewModel.loadError.collect { errorMsg ->
-                    if (!errorMsg.equals("")) Toast.makeText(this@MainActivity, "err: $errorMsg", Toast.LENGTH_SHORT).show()
+                launch {
+                    viewModel.loadError.collect { errorMsg ->
+                        if (!errorMsg.equals("")) Toast.makeText(
+                            this@MainActivity,
+                            "err: $errorMsg",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
