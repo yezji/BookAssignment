@@ -21,8 +21,7 @@ import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.FragmentSearchMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.*
 
 class SearchMainFragment : Fragment() {
     private val TAG = SearchMainFragment::class.java.simpleName
@@ -71,11 +70,25 @@ class SearchMainFragment : Fragment() {
         lifecycleScope.launch {
             // repeatOnLifecycle을 하면 start, stop 마다 자동으로 구독을 중지하고 이어간다.
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.bookList.collect { bookList ->
-                    Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
-                    adapter.submitList(bookList)
+                launch {
+                    viewModel.bookList.collect { bookList ->
+                        Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
+                        adapter.submitList(bookList)
+                    }
+                }
+
+                launch {
+                    viewModel.keyword
+                        .debounce(2000)
+                        .filter {
+                            it.length > 0
+                        }
+                        .onEach {
+                            Log.d("yezzz mainfragment", "string: $it")
+                        }
                 }
             }
+
 
         }
         /*viewModel.bookList.observe(viewLifecycleOwner) { bookList ->
@@ -108,14 +121,19 @@ class SearchMainFragment : Fragment() {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 // 문자열이 변할 때마다 즉각 문자열 반환
-                return true
+                if ((newText?.length ?: 0) > 0) {
+                    viewModel.setKeyword(newText)
+                    return true
+                }
+                return false
             }
         })
 
 
     }
 
-    fun setAdapter() {
+
+    private fun setAdapter() {
         layoutManager = LinearLayoutManager(context)
         binding.rvResultMain.layoutManager = layoutManager
         binding.rvResultMain.addItemDecoration(DividerItemDecoration(binding.rvResultMain.context, layoutManager.orientation))
@@ -126,7 +144,7 @@ class SearchMainFragment : Fragment() {
 
     }
 
-    fun initScrollListener() {
+    private fun initScrollListener() {
         binding.rvResultMain.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -134,12 +152,12 @@ class SearchMainFragment : Fragment() {
                 val lastVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition()
                 val itemTotalPosition = (binding.rvResultMain.adapter?.itemCount ?: 1) - 1
 
-                if (viewModel.isLoading.value == false) {
+                if (!viewModel.isLoading.value) {
                     // 스크롤이 최하단에 도달하고, 리스트의 마지막이라면
                     if (!binding.rvResultMain.canScrollVertically(1)
                         && lastVisibleItemPosition == itemTotalPosition) {
                         // 마지막 페이지가 아니라면
-                        if (viewModel.isEnd.value == false && viewModel.isLoading.value == false) {
+                        if (!viewModel.isEnd.value && !viewModel.isLoading.value) {
 
                             lifecycleScope.launch {
                                 viewModel.setIsLoading(true)

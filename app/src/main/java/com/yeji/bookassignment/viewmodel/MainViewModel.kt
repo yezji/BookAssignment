@@ -3,9 +3,11 @@ package com.yeji.bookassignment.viewmodel
 import android.util.Log
 import androidx.lifecycle.*
 import com.yeji.bookassignment.data.BookData
+import com.yeji.bookassignment.data.Response
 import com.yeji.bookassignment.repository.ApiRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.coroutines.coroutineContext
 
 //class MainViewModel(private val repository: ApiRepository): ViewModel() {
 class MainViewModel: ViewModel() {
@@ -31,7 +33,7 @@ class MainViewModel: ViewModel() {
 //    private val _page = MutableLiveData<Int>(1)
 //    val page : LiveData<Int> get() = _page
 //    fun setPage(pageNumber: Int) { _page.value = pageNumber }
-//    fun incrementPage() = run { _page.value?.plus(1) } // TODO: run 맞는지 확인
+//    fun incrementPage() = run { _page.value?.plus(1) }
 //
 //    private val _isEnd = MutableLiveData<Boolean>(true)
 //    val isEnd : LiveData<Boolean> get() = _isEnd
@@ -58,15 +60,11 @@ class MainViewModel: ViewModel() {
 //    fun setIsProgressVisible(flag: Boolean?) { _isProgressVisible.value = flag ?: false }
 
     /**
-     * TODO: LiveData StateFlow로 교체
      * StateFlow
      */
-
     private val _keyword = MutableStateFlow<String>("가")
-//    private val _keyword = MutableStateFlow<String>("") // TODO: restore
     val keyword : StateFlow<String> get() = _keyword
     fun setKeyword(query: String?) { _keyword.value = query ?: "가" }
-//    fun setKeyword(query: String?) { _keyword.value = query ?: "" } // TODO: restore
 
     private val _bookList = MutableStateFlow<List<BookData?>>(mutableListOf())
     val bookList: StateFlow<List<BookData?>> get() = _bookList
@@ -76,7 +74,7 @@ class MainViewModel: ViewModel() {
     private val _page = MutableStateFlow<Int>(1)
     val page : StateFlow<Int> get() = _page
     fun setPage(pageNumber: Int) { _page.value = pageNumber }
-    fun incrementPage() = run { _page.value.plus(1) } // TODO: run 맞는지 확인
+    fun incrementPage() = run { _page.value.plus(1) }
 
     private val _isEnd = MutableStateFlow<Boolean>(true)
     val isEnd : StateFlow<Boolean> get() = _isEnd
@@ -106,7 +104,6 @@ class MainViewModel: ViewModel() {
 
     init {
         _keyword.value = "가"
-//        _keyword.value = "" // TODO: restore
         _bookList.value = mutableListOf()
 
         _page.value = 1
@@ -139,7 +136,6 @@ class MainViewModel: ViewModel() {
 
     private suspend fun getSearchBookList(
         query: String = keyword.value ?: "가",
-//        query: String = keyword.value ?: "", // TODO: restore
         sort: String = "accuracy",
         page: Int? = this.page.value,
         size: Int = 10, // TODO: replace fixed value
@@ -149,15 +145,16 @@ class MainViewModel: ViewModel() {
         //                setIsProgressVisible(true)
 
             if (keyword.value.equals("")) {
-                setKeyword("가") // TODO: restore
+                setKeyword("가")
             }
             Log.d("yezzz viewmodel", "isLoading: ${isLoading.value.toString()}")
             Log.d("yezzz viewmodel", "query: $query, page: $page")
 
 
             // request search api
-            val responseFlow = ApiRepository.getSearchBookListFlow(query, sort, page, size, target)
+            val responseFlow: Flow<Response> = ApiRepository.getSearchBookListFlow(query, sort, page, size, target)
             responseFlow
+//                .flowOn(Dispatchers.IO)
                 .collect { flow ->
                 if (flow.documents != null) {
                     // success case
