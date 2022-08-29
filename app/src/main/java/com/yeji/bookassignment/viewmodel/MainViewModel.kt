@@ -63,10 +63,8 @@ class MainViewModel: ViewModel() {
      * StateFlow
      */
     private val _keyword = MutableStateFlow<String>("가")
-//    private val _keyword = MutableStateFlow<String>("") // TODO: restore
     val keyword : StateFlow<String> get() = _keyword
     fun setKeyword(query: String?) { _keyword.value = query ?: "가" }
-//    fun setKeyword(query: String?) { _keyword.value = query ?: "" } // TODO: restore
 
     private val _bookList = MutableStateFlow<List<BookData?>>(mutableListOf())
     val bookList: StateFlow<List<BookData?>> get() = _bookList
@@ -106,7 +104,6 @@ class MainViewModel: ViewModel() {
 
     init {
         _keyword.value = "가"
-//        _keyword.value = "" // TODO: restore
         _bookList.value = mutableListOf()
 
         _page.value = 1
@@ -139,7 +136,6 @@ class MainViewModel: ViewModel() {
 
     private suspend fun getSearchBookList(
         query: String = keyword.value ?: "가",
-//        query: String = keyword.value ?: "", // TODO: restore
         sort: String = "accuracy",
         page: Int? = this.page.value,
         size: Int = 10, // TODO: replace fixed value
@@ -149,7 +145,7 @@ class MainViewModel: ViewModel() {
         //                setIsProgressVisible(true)
 
             if (keyword.value.equals("")) {
-                setKeyword("가") // TODO: restore
+                setKeyword("가")
             }
             Log.d("yezzz viewmodel", "isLoading: ${isLoading.value.toString()}")
             Log.d("yezzz viewmodel", "query: $query, page: $page")

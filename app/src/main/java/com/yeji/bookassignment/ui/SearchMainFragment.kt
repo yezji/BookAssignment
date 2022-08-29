@@ -21,8 +21,7 @@ import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.FragmentSearchMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.*
 
 class SearchMainFragment : Fragment() {
     private val TAG = SearchMainFragment::class.java.simpleName
@@ -77,7 +76,19 @@ class SearchMainFragment : Fragment() {
                         adapter.submitList(bookList)
                     }
                 }
+
+                launch {
+                    viewModel.keyword
+                        .debounce(2000)
+                        .filter {
+                            it.length > 0
+                        }
+                        .onEach {
+                            Log.d("yezzz mainfragment", "string: $it")
+                        }
+                }
             }
+
 
         }
         /*viewModel.bookList.observe(viewLifecycleOwner) { bookList ->
@@ -110,12 +121,17 @@ class SearchMainFragment : Fragment() {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 // 문자열이 변할 때마다 즉각 문자열 반환
-                return true
+                if ((newText?.length ?: 0) > 0) {
+                    viewModel.setKeyword(newText)
+                    return true
+                }
+                return false
             }
         })
 
 
     }
+
 
     private fun setAdapter() {
         layoutManager = LinearLayoutManager(context)
