@@ -1,6 +1,7 @@
 package com.yeji.bookassignment.repository
 
 import android.util.Log
+import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.data.Response
 import com.yeji.bookassignment.network.ApiClient
 import com.yeji.bookassignment.network.ApiDataSourceImpl
@@ -18,19 +19,37 @@ object ApiRepository {
         page: Int?,
         size: Int?,
         target: String?
-    ) : Flow<Response> {
+    ) : Flow<Result<List<BookData>>> {
         return flow {
             // Flow 블록에서 emit으로 데이터를 발행
-            try {
-                val response = ApiClient.retrofit.getSearchBookList(query, sort, page, size, target)
-                emit(response)
+//            try {
+//                val response = ApiClient.retrofit.getSearchBookList(query, sort, page, size, target)
+//                emit(response)
+//            }
+//            catch (e: HttpException) {
+//            }
+//            catch (e: Throwable) {
+//            }
+            val response = ApiClient.retrofit.getSearchBookList(query, sort, page, size, target)
+            if(response.documents != null){
+                emit(Result.Success(response.documents))
+                return@flow
             }
-            catch (e: HttpException) {
-                Log.e("yezzz repository", "HttpException: ${e.message()}")
+            emit(Result.Error(exception = NullPointerException()))
+        }.catch { e->
+            when (e) {
+                is HttpException ->
+                   Log.e("yezzz repository", "HttpException: ${e.message()}")
+                else ->
+                    Log.e("yezzz repository", "Throwable: $e")
+
             }
-            catch (e: Throwable) {
-                Log.e("yezzz repository", "Throwable: $e")
-            }
+            emit(Result.Error(exception = Exception(e.message)))
         }
     }
+}
+
+sealed class Result<out R> {
+    data class Success<out T>(val data: T) : Result<T>()
+    data class Error(val exception: Exception) : Result<Nothing>()
 }

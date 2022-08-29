@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.data.Response
 import com.yeji.bookassignment.repository.ApiRepository
+import com.yeji.bookassignment.repository.Result
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.coroutineContext
@@ -59,8 +60,12 @@ class MainViewModel: ViewModel() {
 //    val isProgressVisible : LiveData<Boolean> get() = _isProgressVisible
 //    fun setIsProgressVisible(flag: Boolean?) { _isProgressVisible.value = flag ?: false }
 
-    /**
-     * StateFlow
+    /** comments
+     * - StateFlow
+     * TODO: asStateFlow() 형태로 getter 변환하기
+     * - get() 형태로 작성하지 않아도 된다. `.asStateFlow()`는 내부에서 ReadonlyStateFlow다. (immutable 스타일)
+     *   // private val _isProgressVisible = MutableStateFlow<Boolean>(false)
+         // val isProgressVisible  = _isProgressVisible.asStateFlow()
      */
     private val _keyword = MutableStateFlow<String>("가")
     val keyword : StateFlow<String> get() = _keyword
@@ -97,10 +102,30 @@ class MainViewModel: ViewModel() {
     fun setLoadError(message: String?) { _loadError.value = message ?: "" }
 
     private val _isProgressVisible = MutableStateFlow<Boolean>(false)
-    val isProgressVisible : StateFlow<Boolean> get() = _isProgressVisible
+    val isProgressVisible  = _isProgressVisible.asStateFlow()
+
     fun setIsProgressVisible(flag: Boolean?) { _isProgressVisible.value = flag ?: false }
 
 
+    // TODO: MainViewState 형태로 변환하기
+    // State 스타일 참고 https://developer.android.com/jetpack/compose/state?hl=ko#viewmodels-source-of-truth
+
+//
+//    data class MainViewState(
+//        var isEnd: Boolean = false,
+//        val isLoading:Boolean = false
+//    )
+//    private val _uiState = MutableStateFlow<MainViewState>()
+//    val uiState = _uiState.asStateFlow()
+//
+//    fun test(){
+//        _uiState.update{
+//            it.copy(
+//                isEnd = true
+//            )
+//        }
+//    }
+//
 
     init {
         _keyword.value = "가"
@@ -152,38 +177,56 @@ class MainViewModel: ViewModel() {
 
 
             // request search api
-            val responseFlow: Flow<Response> = ApiRepository.getSearchBookListFlow(query, sort, page, size, target)
+            val responseFlow = ApiRepository.getSearchBookListFlow(query, sort, page, size, target)
             responseFlow
-//                .flowOn(Dispatchers.IO)
+                    // TODO: check Default나 Unconfied일 때, view에서 조작해보아 exception 만들기
+//                .flowOn(Dispatchers.IO) // runtimeexception check Default, view에서 조작해보기
                 .collect { flow ->
-                if (flow.documents != null) {
-                    // success case
-                    val documents = flow.documents
-                    val meta = flow.meta
-                    if (documents.isNotEmpty()) {
-                        val list = bookList.value.toMutableList()
-                        list.addAll(documents)
-                        setBookList(list)
+                    when(flow){
+                        // TODO: sealed class 사용하여 State 처리
+                        is Result.Success -> {
+                            val data = flow.data
+
+                            if (data.isNotEmpty()) {
+                                val list = bookList.value.toMutableList()
+                                list.addAll(data)
+                                setBookList(list)
+                            }
+                        }
+                        is Result.Error -> {
+
+                        }
                     }
-                    Log.d("yezzz viewmodel", "documents: ${documents}")
-                    Log.d("yezzz viewmodel", "meta: ${meta}")
-                    setIsEnd(meta?.is_end)
-                    setPageableCount(meta?.pageable_count)
-                    setTotalCount(meta?.total_count)
 
-                    setLoadError(null)
+                    if (flow.documents != null) {
+                        // success case
+                        val documents = flow.documents
+                        val meta = flow.meta
+                        if (documents.isNotEmpty()) {
+                            val list = bookList.value.toMutableList()
+                            list.addAll(documents)
+                            setBookList(list)
+                        }
+                        Log.d("yezzz viewmodel", "documents: ${documents}")
+                        Log.d("yezzz viewmodel", "meta: ${meta}")
+                        setIsEnd(meta?.is_end)
+                        setPageableCount(meta?.pageable_count)
+                        setTotalCount(meta?.total_count)
+
+                        setLoadError(null)
+                    }
+                    else {
+                        // failure case
+                        onError("err msg: ${ flow.errorType}")
+                    }
+
+                    setIsLoading(false)
+
+                    Log.d("yezzz viewModel", "isLoading: ${isLoading.value}")
+                    Log.d("yezzz viewModel", "page: ${page}")
+
                 }
-                else {
-                    // failure case
-                    onError("err msg: ${ flow.errorType}")
-                }
 
-                setIsLoading(false)
-
-                Log.d("yezzz viewModel", "isLoading: ${isLoading.value}")
-                Log.d("yezzz viewModel", "page: ${page}")
-
-            }
     }
 
     private fun onError(message: String) {
