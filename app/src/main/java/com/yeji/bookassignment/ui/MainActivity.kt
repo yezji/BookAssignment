@@ -65,10 +65,11 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 launch {
-                    viewModel.keyword.collect { keyword ->
-                        Log.d("yezzz mainactivity", "keyword: $keyword")
-                        viewModel.getAllList()
-                    }
+                    // 쿼리 바뀔 때 바로 api 요청 x
+//                    viewModel.keyword.collect { keyword ->
+//                        Log.d("yezzz mainactivity", "keyword: $keyword")
+//                        viewModel.getAllList()
+//                    }
                 }
 
                 launch {

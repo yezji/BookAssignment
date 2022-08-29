@@ -79,13 +79,16 @@ class SearchMainFragment : Fragment() {
 
                 launch {
                     viewModel.keyword
+                        // 검색어 입력 후 2초 뒤에 api 요청하기 (수정 시간 주는 역할)
                         .debounce(2000)
-                        .filter {
-                            it.length > 0
+                        .filter { query ->
+                            query.isNotEmpty()
                         }
                         .onEach {
-                            Log.d("yezzz mainfragment", "string: $it")
+                            viewModel.getAllList()
+                            Log.d("yezzz mainfragment", "debounce string: $it")
                         }
+                        .launchIn(this)
                 }
             }
 
@@ -121,10 +124,13 @@ class SearchMainFragment : Fragment() {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 // 문자열이 변할 때마다 즉각 문자열 반환
+
                 if ((newText?.length ?: 0) > 0) {
                     viewModel.setKeyword(newText)
+                    Log.d("yezzz mainfragment", "text change: $newText")
                     return true
                 }
+
                 return false
             }
         })
