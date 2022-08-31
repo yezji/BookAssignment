@@ -2,12 +2,13 @@ package com.yeji.bookassignment.ui
 
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.yeji.bookassignment.data.FragmentEnum
@@ -63,65 +64,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun initUI() {
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
-                launch {
-                    // 쿼리 바뀔 때 바로 api 요청 x
-//                    viewModel.keyword.collect { keyword ->
-//                        Log.d("yezzz mainactivity", "keyword: $keyword")
-//                        viewModel.getAllList()
-//                    }
+            viewModel.uiState.flowWithLifecycle(lifecycle = lifecycle, Lifecycle.State.STARTED)
+                .collect {
+                    showProgressBar()
+                    showErrorToast()
                 }
-
-                launch {
-                    viewModel.isProgressVisible.collect { isVisible ->
-                        // set progressBar visibility
-                        binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
-                    }
-                }
-
-                launch {
-                    viewModel.loadError.collect { errorMsg ->
-                        if (!errorMsg.equals("")) Toast.makeText(
-                            this@MainActivity,
-                            "err: $errorMsg",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
         }
-//        viewModel.keyword.observe(this) { keyword ->
-//            Log.d("yezzz mainactivity", "keyword: $keyword")
-//            viewModel.getAllList()
-//        }
-//
-//        viewModel.isProgressVisible.observe(this) { isVisible ->
-//            // set progressBar visibility
-//            binding.progressBarMain.visibility = if (isVisible) View.VISIBLE else View.GONE
-//        }
-//
-//        viewModel.loadError.observe(this) { errorMsg ->
-//            if (!errorMsg.equals("")) Toast.makeText(this, "err: $errorMsg", Toast.LENGTH_SHORT).show()
-//        }
-
     }
 
 
+    fun showProgressBar(isVisible: Boolean = viewModel.uiState.value.isProgressVisible){
+        binding.progressBarMain.isVisible = isVisible
+    }
+    fun showErrorToast(errorMsg: String? = viewModel.uiState.value.loadError) {
+        if (errorMsg.isNullOrBlank()) Toast.makeText(this@MainActivity, "err: $errorMsg", Toast.LENGTH_SHORT).show()
+    }
 
-    /*override fun onBackPressed() {
-        val currentTime = System.currentTimeMillis()
-        val gapTime = currentTime - backButtonTime
-
-        if (gapTime in 0..2000) {
-            // 2초 안에 뒤로가기를 두번 누를 시 앱 종료
-            finish()
-            finish()
-        }
-        else {
-            backButtonTime = currentTime
-            if (supportFragmentManager.backStackEntryCount <= 1) Toast.makeText(this, getString(R.string.search_main_backclosetoast), Toast.LENGTH_SHORT).show()
-            else super.onBackPressed()
-        }
-    }*/
 
 }

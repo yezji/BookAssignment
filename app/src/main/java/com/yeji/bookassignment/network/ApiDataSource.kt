@@ -1,6 +1,6 @@
 package com.yeji.bookassignment.network
 
-import com.yeji.bookassignment.data.Response
+import com.yeji.bookassignment.data.BookResponse
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -16,5 +16,5 @@ interface ApiDataSource {
         page: Int?,
         size: Int?,
         target: String?
-    ) : Flow<Response>
+    ) : Flow<BookResponse>
 }

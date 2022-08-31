@@ -11,6 +11,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -21,7 +22,6 @@ import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.FragmentSearchMainBinding
 import com.yeji.bookassignment.viewmodel.MainViewModel
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
 
 class SearchMainFragment : Fragment() {
     private val TAG = SearchMainFragment::class.java.simpleName
@@ -69,39 +69,33 @@ class SearchMainFragment : Fragment() {
          */
         lifecycleScope.launch {
             // repeatOnLifecycle을 하면 start, stop 마다 자동으로 구독을 중지하고 이어간다.
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            /*viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.bookList.collect { bookList ->
-                        Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
-                        adapter.submitList(bookList)
-                    }
+                    viewModel.bookList.collect { bookList -> adapter.submitList(bookList) }
                 }
-
                 launch {
                     viewModel.keyword
                         // 검색어 입력 후 2초 뒤에 api 요청하기 (수정 시간 주는 역할)
                         .debounce(2000)
-                        .filter { query ->
-                            query.isNotEmpty()
-                        }
-                        .onEach {
-                            viewModel.getAllList()
-                            Log.d("yezzz mainfragment", "debounce string: $it")
-                        }
+                        .filter { query -> query.isNotBlank() }
+                        .onEach { viewModel.getAllList() }
                         .launchIn(this)
                 }
-            }
+            }*/
 
-
+            // uiStateFlow 하나만 사용할 것이기에 repeatOnLifecycle 대신 flowWithLifecycle을 사용
+            viewModel.uiState
+                .flowWithLifecycle(lifecycle = lifecycle, Lifecycle.State.STARTED)
+                .collect { uiState ->
+                    uiState.bookList?.let { submitBookList(it) }
+                    // uiState.keyword?.let { setKeyword(it) }
+                }
         }
+
         /*viewModel.bookList.observe(viewLifecycleOwner) { bookList ->
-//            bookList.apply {
-//                Log.d("yezzz mainfragment", "call bookList submit")
-//                adapter.submitList(bookList)
-//            }
+//            bookList.apply { adapter.submitList(bookList) }
 
             //binding.rvResultMain.adapter = adapter.apply {
-            Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
             *//**
              * comments
              * - submitList에서는 List 타입으로만 받는다. MutableList를 넘기려했기에 문제 생겼다.
@@ -111,24 +105,22 @@ class SearchMainFragment : Fragment() {
             //}
         }*/
 
+
         binding.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 // 문자열 입력을 완료했을 때 문자열 반환
-                viewModel.setKeyword(query)
-
-                // scroll to top
-//                binding.scrollviewParent.smoothScrollBy(0, 0)
-
+                query?.let { viewModel.setKeyword(query) }
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 // 문자열이 변할 때마다 즉각 문자열 반환
-
-                if ((newText?.length ?: 0) > 0) {
-                    viewModel.setKeyword(newText)
-                    Log.d("yezzz mainfragment", "text change: $newText")
-                    return true
+                newText?.let {
+                    if (it.isNotEmpty()) {
+                        viewModel.setKeyword(it)
+                        Log.d("yezzz mainfragment", "text change: $it")
+                        return true
+                    }
                 }
 
                 return false
@@ -137,6 +129,19 @@ class SearchMainFragment : Fragment() {
 
 
     }
+
+
+
+    fun submitBookList(bookList: List<BookData?>) {
+        // submitList to adapter
+        adapter.submitList(bookList)
+        Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
+    }
+
+    fun setKeyword(keyword: String) {
+        viewModel.setKeyword(keyword)
+    }
+
 
 
     private fun setAdapter() {
@@ -150,6 +155,7 @@ class SearchMainFragment : Fragment() {
 
     }
 
+
     private fun initScrollListener() {
         binding.rvResultMain.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -158,17 +164,17 @@ class SearchMainFragment : Fragment() {
                 val lastVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition()
                 val itemTotalPosition = (binding.rvResultMain.adapter?.itemCount ?: 1) - 1
 
-                if (!viewModel.isLoading.value) {
+                if (!viewModel.uiState.value.isLoading) {
                     // 스크롤이 최하단에 도달하고, 리스트의 마지막이라면
                     if (!binding.rvResultMain.canScrollVertically(1)
                         && lastVisibleItemPosition == itemTotalPosition) {
                         // 마지막 페이지가 아니라면
-                        if (!viewModel.isEnd.value && !viewModel.isLoading.value) {
+                        if (!viewModel.uiState.value.isEnd && !viewModel.uiState.value.isLoading) {
 
                             lifecycleScope.launch {
                                 viewModel.setIsLoading(true)
                                 viewModel.incrementPage()
-                                Log.d("yezzz scroll listener", "page: ${viewModel.page.value}")
+                                Log.d("yezzz scroll listener", "page: ${viewModel.uiState.value.page}")
 
                                 loadMore()
                             }
@@ -195,7 +201,7 @@ class SearchMainFragment : Fragment() {
             adapter.apply {
                 viewModel.getMoreList()
                 // TODO: submitList 따로?
-                submitList(viewModel.bookList.value)
+                submitList(viewModel.uiState.value.bookList)
             }
         }
     }

@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Response(
+data class BookResponse(
     @SerialName("meta") val meta: MetaData?,
     @SerialName("documents") val documents: List<BookData>?,
 

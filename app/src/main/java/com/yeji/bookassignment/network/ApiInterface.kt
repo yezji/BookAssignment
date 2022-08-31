@@ -1,7 +1,6 @@
 package com.yeji.bookassignment.network
 
-import com.yeji.bookassignment.data.Response
-import kotlinx.coroutines.flow.Flow
+import com.yeji.bookassignment.data.BookResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -13,5 +12,5 @@ interface ApiInterface {
         @Query("page") page: Int?,
         @Query("size") size: Int?,
         @Query("target") target: String?
-    ) : Response
+    ) : BookResponse
 }

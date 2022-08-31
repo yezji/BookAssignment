@@ -1,12 +1,8 @@
 package com.yeji.bookassignment.repository
 
 import android.util.Log
-import com.yeji.bookassignment.data.BookData
-import com.yeji.bookassignment.data.Response
+import com.yeji.bookassignment.data.BookResponse
 import com.yeji.bookassignment.network.ApiClient
-import com.yeji.bookassignment.network.ApiDataSourceImpl
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import retrofit2.HttpException
 
@@ -19,23 +15,20 @@ object ApiRepository {
         page: Int?,
         size: Int?,
         target: String?
-    ) : Flow<Result<List<BookData>>> {
+    ) : Flow<Result<BookResponse>> {
         return flow {
-            // Flow 블록에서 emit으로 데이터를 발행
-//            try {
-//                val response = ApiClient.retrofit.getSearchBookList(query, sort, page, size, target)
-//                emit(response)
-//            }
-//            catch (e: HttpException) {
-//            }
-//            catch (e: Throwable) {
-//            }
             val response = ApiClient.retrofit.getSearchBookList(query, sort, page, size, target)
-            if(response.documents != null){
-                emit(Result.Success(response.documents))
+            if (response.documents != null) {
+                // Flow 블록에서 emit으로 데이터를 발행
+                emit(Result.Success(response))
+                return@flow
+            }
+            else if (response.errorType != null) {
+                emit(Result.Error(exception = Exception(response.errorType)))
                 return@flow
             }
             emit(Result.Error(exception = NullPointerException()))
+
         }.catch { e->
             when (e) {
                 is HttpException ->

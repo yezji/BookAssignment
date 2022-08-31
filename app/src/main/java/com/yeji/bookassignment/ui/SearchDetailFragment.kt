@@ -13,7 +13,6 @@ import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.databinding.FragmentSearchDetailBinding
 import com.yeji.bookassignment.util.LocalizeCurrency
 import com.yeji.bookassignment.viewmodel.MainViewModel
-import kotlinx.serialization.SerialName
 
 class SearchDetailFragment : Fragment() {
     private val TAG = SearchDetailFragment::class.java.simpleName
@@ -55,7 +54,9 @@ class SearchDetailFragment : Fragment() {
         // receive bundle data
         setFragmentResultListener(TAG) { requestKey: String, bundle: Bundle ->
             position = bundle.getInt("itemPosition")
-            bookData = viewModel.bookList.value?.get(position)!!
+            viewModel.uiState.value.bookList?.let {
+                bookData = it.get(position)
+            }
             initUI(position)
         }
     }
@@ -77,17 +78,18 @@ class SearchDetailFragment : Fragment() {
 
         binding.ibNormalLike.setOnClickListener {
             // toggle like status
-            var status = viewModel.bookList.value?.get(position)?.like
+            var status = viewModel.uiState.value.bookList?.get(position)?.like
             status = !status!!
             bookData.like = status
 
-            val mutableList = viewModel.bookList.value?.toMutableList() ?: mutableListOf()
-            mutableList[position] = bookData
-            viewModel.setBookList(mutableList.toList())
-
+            viewModel.uiState.value.bookList?.let {
+                val mutableList = it.toMutableList()
+                mutableList[position] = bookData
+                viewModel.setBookList(mutableList.toList())
+            }
             setLikeResource()
 
-            Log.d("yezzz", "pos: $position, like: ${viewModel.bookList.value!![position]!!.like}")
+            Log.d("yezzz", "pos: $position, like: ${viewModel.uiState.value.bookList?.get(position)?.like}")
         }
         binding.ibNormalBack.setOnClickListener {
             parentFragmentManager.popBackStack()
@@ -95,7 +97,7 @@ class SearchDetailFragment : Fragment() {
     }
 
     private fun setLikeResource() {
-        if (viewModel.bookList.value?.get(position)?.like == true) binding.ibNormalLike.setImageResource(R.drawable.ic_favorite_filled_24)
+        if (viewModel.uiState.value.bookList?.get(position)?.like == true) binding.ibNormalLike.setImageResource(R.drawable.ic_favorite_filled_24)
         else binding.ibNormalLike.setImageResource(R.drawable.ic_favorite_empty_24)
     }
 }

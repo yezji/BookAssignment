@@ -1,6 +1,6 @@
 package com.yeji.bookassignment.network
 
-import com.yeji.bookassignment.data.Response
+import com.yeji.bookassignment.data.BookResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -16,7 +16,7 @@ class ApiDataSourceImpl: ApiDataSource {
         page: Int?,
         size: Int?,
         target: String?
-    ) : Flow<Response> {
+    ) : Flow<BookResponse> {
         return flow {
             // Flow 블록에서 emit으로 데이터를 발행
             emit(ApiClient.retrofit.getSearchBookList(query, sort, page, size, target))
