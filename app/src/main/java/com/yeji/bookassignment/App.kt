@@ -13,9 +13,4 @@ class App : Application() {
      */
     // serviceLocator
     // val repository = ApiRepository()
-
-    override fun onCreate() {
-        super.onCreate()
-
-    }
 }

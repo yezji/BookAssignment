@@ -206,13 +206,12 @@ class MainViewModel : ViewModel() {
         Log.d("yezzz viewmodel", "query: $query, page: $page")
 
 
+
         // request search api
         val responseFlow = ApiRepository.getSearchBookListFlow(query, sort, page, size, target)
         responseFlow
-            // TODO: check Default나 Unconfied일 때, view에서 조작해보아 exception 만들기
             // viewModel에서는 어떤 dispatcher를 지정해도 retrofit에서 통신할 때 IO로 통신하기에 문제가 없다.
 //                .flowOn(Dispatchers.IO) // runtimeexception check Default, view에서 조작해보기
-            .flowOn(Dispatchers.Default)
             .collect { flow ->
                 when (flow) {
                     // TODO: sealed class 사용하여 State 처리
@@ -247,11 +246,11 @@ class MainViewModel : ViewModel() {
                         setIsLoading(false)
                     }
 
-
 //                    Log.d("yezzz viewModel", "isLoading: ${uiState.value.isLoading}")
 //                    Log.d("yezzz viewModel", "page: ${uiState.value.page}")
                 }
             }
+
 
     }
 

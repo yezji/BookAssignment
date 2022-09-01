@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.yeji.bookassignment.data.BookData
 import com.yeji.bookassignment.data.FragmentEnum
 import com.yeji.bookassignment.databinding.FragmentSearchMainBinding
+import com.yeji.bookassignment.repository.ApiRepository
+import com.yeji.bookassignment.repository.Result
 import com.yeji.bookassignment.viewmodel.MainViewModel
 import kotlinx.coroutines.*
 
@@ -57,6 +59,33 @@ class SearchMainFragment : Fragment() {
         initScrollListener()
 
         initUI()
+/*
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+
+                        // request search api
+                        ApiRepository.getSearchBookListFlow(
+                            query="감자",
+                            sort="accuracy",
+                            page=1,
+                            size=10,
+                            target="title")
+                            // runtimeexception check Default, view에서 조작해보기
+                            .flowOn(Dispatchers.Unconfined).collect { flow ->
+                                when (flow) {
+                                    is Result.Success -> {
+                                        // success case
+                                    }
+                                    is Result.Error -> {
+                                        // failure case
+                                    }
+                                }
+                            }
+                        }
+                }
+            }
+        }*/
 
     }
 
