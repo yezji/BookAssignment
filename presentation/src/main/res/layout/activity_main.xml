@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.yeji.presentation.viewmodel.MainViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.yeji.presentation.ui.MainActivity"
+        >
+
+        <!-- comments
+        - Fragment에서 FrameLayout -> FragmentContainerView 사용
+            - Fragment 전용으로 설계된 컨테이너
+                - Fragment transaction을 안정적으로 처리할 수 있고, 동작 조정 기능 추가
+                - 부드러운 애니메이션
+            - FrameLayout은 Fragment의 z-ordering을 처리하는데 문제가 있다.
+                - z-ordering이 보장되면 슬라이딩 애니메이션 등을 자연스럽게 처리하여 볼 수 있다.
+        -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fl_main_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <ProgressBar
+            android:id="@+id/progress_bar_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminateTint="@color/primary"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
