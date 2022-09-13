@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.yeji.presentation.ui.SearchMainFragment"
+
+    android:id="@+id/tb_search_main"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="@color/white_100"
+    app:contentInsetStart="0dp"
+    app:contentInsetEnd="0dp"
+    >
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/sv_search_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:imeOptions="actionDone"
+        app:searchIcon="@drawable/ic_search_24"
+        app:iconifiedByDefault="false"
+        android:background="@drawable/shape_underline_gray20"
+        />
+</androidx.appcompat.widget.Toolbar>

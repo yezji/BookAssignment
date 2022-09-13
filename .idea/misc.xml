@@ -28,6 +28,8 @@
         <entry key="presentation/src/main/res/layout/activity_main.xml" value="0.11684782608695653" />
         <entry key="presentation/src/main/res/layout/fragment_search_detail.xml" value="0.11684782608695653" />
         <entry key="presentation/src/main/res/layout/fragment_search_main.xml" value="0.11684782608695653" />
+        <entry key="presentation/src/main/res/layout/toolbar_search_detail.xml" value="0.10555555555555556" />
+        <entry key="presentation/src/main/res/layout/toolbar_search_main.xml" value="0.10555555555555556" />
         <entry key="presentation/src/main/res/layout/view_main_book_item.xml" value="0.1" />
       </map>
     </option>

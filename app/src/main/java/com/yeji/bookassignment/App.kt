@@ -8,7 +8,6 @@ import dagger.hilt.android.HiltAndroidApp
 class App : Application() {
     /**
      * comments
-     * TODO: DI
      * - serviceLocator
      * (https://en.wikipedia.org/wiki/Service_locator_pattern)
      *  - DI 주입 때문에 이런식으로 사용한다.

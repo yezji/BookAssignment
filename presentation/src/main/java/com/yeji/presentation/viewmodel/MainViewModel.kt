@@ -77,12 +77,13 @@ class MainViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        handleEvent(event = MainEvent.GetBookDataList)
+        handleEvent(event = GetBookDataListEvent.RequestBookDataList)
     }
 
-    fun handleEvent(event: MainEvent) {
+    fun handleEvent(event: GetBookDataListEvent) {
         when (event) {
-            MainEvent.GetBookDataList -> getAllList()
+            GetBookDataListEvent.RequestBookDataList -> getAllList()
+            GetBookDataListEvent.HandleErrorComplete -> handleError()
         }
     }
 
@@ -158,12 +159,22 @@ class MainViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = isLoading) }
     }
 
-    fun setLoadError(loadError: String) {
+    fun setLoadError(loadError: String?) {
         _uiState.update { it.copy(loadError = loadError) }
     }
 
     fun setIsProgressVisible(isProgressVisible: Boolean) {
         _uiState.update { it.copy(isProgressVisible = isProgressVisible) }
+    }
+
+    // TODO: MainViewState Error쪽에서 view 변경하기
+    private fun onError(message: String) {
+        setLoadError(message)
+        setIsProgressVisible(false)
+    }
+
+    private fun clearSearchBookList() {
+        setBookList(mutableListOf())
     }
 
     /** comments
@@ -202,7 +213,8 @@ class MainViewModel @Inject constructor(
     }
 
     fun getMoreList() {
-        viewModelScope.launch { getSearchBookList() }
+        viewModelScope.launch { getSearchBookList()
+        }
     }
 
     private suspend fun getSearchBookList(
@@ -229,7 +241,7 @@ class MainViewModel @Inject constructor(
 //                .flowOn(Dispatchers.IO) // runtimeexception check Default, view에서 조작해보기
             .collect { flow ->
                 when (flow) {
-                    // TODO: sealed class 사용하여 State 처리
+                    // sealed class 사용하여 State 처리
                     is Result.Success -> {
                         // success case
                         val docs = flow.data.documents
@@ -265,26 +277,19 @@ class MainViewModel @Inject constructor(
                     }
                 }
             }
-
-
     }
 
-    // TODO: MainViewState Error쪽에서 view 변경하기
-    private fun onError(message: String) {
-        setLoadError(message)
-        setIsProgressVisible(false)
-    }
-
-    private fun clearSearchBookList() {
-        setBookList(mutableListOf())
+    private fun handleError() {
+        setLoadError(null)
     }
 
 }
 
 
-// TODO: ViewState 적용
-sealed class MainEvent {
-    object GetBookDataList : MainEvent()
+sealed class GetBookDataListEvent {
+    // ViewState 적용
+    object RequestBookDataList : GetBookDataListEvent()
+    object HandleErrorComplete : GetBookDataListEvent()
 }
 
 data class MainViewState (
@@ -297,6 +302,6 @@ data class MainViewState (
     val totalCount: Int? = 0,
 
     val isLoading: Boolean = false,
-    val loadError: String? = "",
+    val loadError: String? = null,
     val isProgressVisible: Boolean = false
 )

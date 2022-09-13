@@ -13,10 +13,14 @@ import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavDirections
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.yeji.domain.model.BookData
+import com.yeji.presentation.R
 import com.yeji.presentation.databinding.FragmentSearchMainBinding
 import com.yeji.presentation.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -133,27 +137,6 @@ class SearchMainFragment : Fragment() {
         }*/
 
 
-        binding.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                // 문자열 입력을 완료했을 때 문자열 반환
-                query?.let { viewModel.setKeyword(query) }
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                // 문자열이 변할 때마다 즉각 문자열 반환
-                newText?.let {
-                    if (it.isNotEmpty()) {
-                        viewModel.setKeyword(it)
-                        Log.d("yezzz mainfragment", "text change: $it")
-                        return true
-                    }
-                }
-
-                return false
-            }
-        })
-
 
     }
 
@@ -163,10 +146,6 @@ class SearchMainFragment : Fragment() {
         // submitList to adapter
         adapter.submitList(bookList)
         Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
-    }
-
-    fun setKeyword(keyword: String) {
-        viewModel.setKeyword(keyword)
     }
 
 
@@ -234,13 +213,16 @@ class SearchMainFragment : Fragment() {
     }
 
     fun bookItemClick(bookData: BookData?, position: Int) {
-        val dest = SearchDetailFragment::class.java.simpleName
-        setFragmentResult(dest, bundleOf("itemPosition" to position))
+        val action: NavDirections = SearchMainFragmentDirections.actionFragmentSearchMainToFragmentSearchDetail(itemPosition = position)
+        findNavController().navigate(action)
 
-        parentFragmentManager.beginTransaction()
-            .add(binding.root.id, searchDetailFragment, null)
-            .addToBackStack(null)
-            .commit()
+//        val dest = SearchDetailFragment::class.java.simpleName
+//        setFragmentResult(dest, bundleOf("itemPosition" to position))
+//
+//        parentFragmentManager.beginTransaction()
+//            .add(binding.root.id, searchDetailFragment, null)
+//            .addToBackStack(null)
+//            .commit()
         Log.d("yezzzz", "bookItemclick: ${bookData?.title?:"null"} $position")
     }
 

@@ -2,7 +2,9 @@ package com.yeji.data.di.remote
 
 import com.yeji.data.repository.ApiRepositoryImpl
 import com.yeji.data.repository.remote.ApiRemoteDataSource
+import com.yeji.data.repository.remote.ApiRemoteDataSourceImpl
 import com.yeji.domain.repository.ApiRepository
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,12 +14,16 @@ import javax.inject.Singleton
 // TODO: Binds로 변경하기 (현재 코드에서는 컴파일할 때 미리 만들어두고 메모리에 항상 올라와있음 -> 효율 낮음 그래서 Binds로 변경)
 @Module
 @InstallIn(SingletonComponent::class)
-class RepositoryModule { // singleton으로 만들었으면 object
-    @Singleton
-    @Provides
-    fun provideApiRepository(dataSource: ApiRemoteDataSource): ApiRepository {
-        return ApiRepositoryImpl(dataSource)
-    }
+abstract class RepositoryModule {
+//class RepositoryModule { // singleton으로 만들었으면 object
+//    @Singleton
+//    @Provides
+//    fun provideApiRepository(dataSource: ApiRemoteDataSource): ApiRepository {
+//        return ApiRepositoryImpl(dataSource)
+//    }
+
+    @Binds
+    abstract fun provideApiRepository(apiRepositoryImpl: ApiRepositoryImpl): ApiRepository
 }
 /**
  * Binds + abstract fun 구조로 만들었을 때 이점?
