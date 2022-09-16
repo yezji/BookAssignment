@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
     private lateinit var searchMainFragment: SearchMainFragment
 
 //    private var backButtonTime = 0L
-//    private lateinit var clickListener: ClickListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,9 +64,9 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
 //            .get(MainViewModel::class.java)
 
 
-
         // prepare fragment instance
-        searchMainFragment = SearchMainFragment()
+      //  searchMainFragment = SearchMainFragment()
+
 //        // set transaction of sfm
 //        transaction = supportFragmentManager.beginTransaction()
 //        transaction
@@ -75,15 +74,13 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
 //            .commit()
 
         // set navigation
-//        setToolbar(fragId = R.id.fragment_search_main)
-
         val navHostFragment = supportFragmentManager.findFragmentById(binding.navMainContent.id) as NavHostFragment
         navController = navHostFragment.navController
         binding.toolbar.setupWithNavController(navController)
-
 //        setupActionBarWithNavController(navController) // actionbar
-//        binding.bnv.setupWithNavController(navController) // bottomnavigationview
+//        setToolbar(fragId = R.id.fragment_search_main)
 
+//        binding.bnv.setupWithNavController(navController) // bottomnavigationview
         navController.addOnDestinationChangedListener(this)
 
         initUI()
@@ -94,8 +91,8 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
         lifecycleScope.launch {
             viewModel.uiState.flowWithLifecycle(lifecycle = lifecycle, Lifecycle.State.STARTED)
                 .collect {
-                    if (it.isProgressVisible) showProgressBar()
-                    if (!it.loadError.isNullOrBlank()) showErrorToast()
+                    showProgressBar(isVisible = it.isProgressVisible)
+                    showErrorToast(errorMsg = it.loadError)
                 }
         }
 
@@ -105,10 +102,10 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
     }
 
 
-    fun showProgressBar(isVisible: Boolean = viewModel.uiState.value.isProgressVisible){
+    private fun showProgressBar(isVisible: Boolean){
         binding.progressBarMain.isVisible = isVisible
     }
-    fun showErrorToast(errorMsg: String? = viewModel.uiState.value.loadError) {
+    private fun showErrorToast(errorMsg: String?) {
         if (!errorMsg.isNullOrBlank()) Toast.makeText(this@MainActivity, "err: $errorMsg", Toast.LENGTH_SHORT).show()
     }
 
@@ -140,8 +137,3 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
 //    }
 
 }
-
-//interface ClickListener {
-////    fun onBookItemClick()
-//    fun onLikeClicked() : Boolean
-//}

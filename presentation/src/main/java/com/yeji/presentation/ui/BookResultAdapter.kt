@@ -63,28 +63,30 @@ class BookResultAdapter(
 //        else TYPE_ITEM
     }
 
-    fun addLoading() : Int {
+    fun addLoading() : MutableList<BookData?> {
         val list = currentList.toMutableList()
         list.add(null)
         /**
          * comments
-         * TODO: submitList view쪽에서 하기
+         * submitList view쪽에서 하기
          * - submitList()는 view쪽에서 해주는 것이 좋다.
          */
-        submitList(list)
+//        submitList(list)
 
-        return list.lastIndex // loading position
+//        return list.lastIndex // loading position
+        return list
     }
 
-    fun deleteLoading() : Boolean {
+    fun deleteLoading() : MutableList<BookData?> {
         val list = currentList.toMutableList()
         if (list.isNotEmpty()) {
 //            list.removeAt(position)
             list.removeLast()
-            submitList(list)
+//            submitList(list)
         }
 
-        return true // success deletion
+//        return true // success deletion
+        return list
     }
 
 

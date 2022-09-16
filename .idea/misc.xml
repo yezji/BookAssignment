@@ -31,6 +31,7 @@
         <entry key="presentation/src/main/res/layout/toolbar_search_detail.xml" value="0.10555555555555556" />
         <entry key="presentation/src/main/res/layout/toolbar_search_main.xml" value="0.10555555555555556" />
         <entry key="presentation/src/main/res/layout/view_main_book_item.xml" value="0.1" />
+        <entry key="presentation/src/main/res/layout/view_main_book_item_loading.xml" value="0.1403242147922999" />
         <entry key="presentation/src/main/res/menu/bottom_navigation_view.xml" value="0.10555555555555556" />
       </map>
     </option>

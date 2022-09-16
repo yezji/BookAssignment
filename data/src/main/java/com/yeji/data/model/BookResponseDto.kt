@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BookResponseDto(
     @SerialName("meta") val meta: MetaData?,
-    @SerialName("documents") val documents: List<BookData?>?,
+    @SerialName("documents") val documents: List<BookDataDto>?,
 
     @SerialName("errorType") val errorType: String?,
     @SerialName("message") val message: String?
@@ -18,7 +18,7 @@ data class BookResponseDto(
 fun BookResponseDto.toDomainModel(): BookResponse {
     return BookResponse(
         meta = this.meta,
-        documents = this.documents,
+        documents = this.documents?.toDomainList(),
         errorType = this.errorType,
         message = this.message
     )
