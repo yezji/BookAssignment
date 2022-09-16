@@ -8,6 +8,7 @@
     <fragment
         android:id="@+id/fragment_search_main"
         android:name="com.yeji.presentation.ui.SearchMainFragment"
+        android:label="@null"
         tools:layout="@layout/fragment_search_main"
         >
         <action
@@ -17,6 +18,7 @@
     <fragment
         android:id="@+id/fragment_search_detail"
         android:name="com.yeji.presentation.ui.SearchDetailFragment"
+        android:label="@null"
         tools:layout="@layout/fragment_search_detail" >
         <argument android:name="itemPosition"
             app:argType="integer" />

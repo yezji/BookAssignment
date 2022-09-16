@@ -16,6 +16,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.yeji.presentation.R
 import com.yeji.presentation.databinding.ActivityMainBinding
 import com.yeji.presentation.databinding.ToolbarSearchDetailBinding
@@ -44,14 +45,14 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
     private lateinit var searchMainFragment: SearchMainFragment
 
 //    private var backButtonTime = 0L
-    private lateinit var clickListener: ClickListener
+//    private lateinit var clickListener: ClickListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         _binding = ActivityMainBinding.inflate(layoutInflater)
-        _toolbarMainBinding = ToolbarSearchMainBinding.inflate(layoutInflater)
-        _toolbarDetailBinding = ToolbarSearchDetailBinding.inflate(layoutInflater)
+//        _toolbarMainBinding = ToolbarSearchMainBinding.inflate(layoutInflater)
+//        _toolbarDetailBinding = ToolbarSearchDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
 
@@ -74,11 +75,14 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
 //            .commit()
 
         // set navigation
-        setToolbar(fragId = R.id.fragment_search_main)
+//        setToolbar(fragId = R.id.fragment_search_main)
 
         val navHostFragment = supportFragmentManager.findFragmentById(binding.navMainContent.id) as NavHostFragment
         navController = navHostFragment.navController
-        setupActionBarWithNavController(navController)
+        binding.toolbar.setupWithNavController(navController)
+
+//        setupActionBarWithNavController(navController) // actionbar
+//        binding.bnv.setupWithNavController(navController) // bottomnavigationview
 
         navController.addOnDestinationChangedListener(this)
 
@@ -97,36 +101,6 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
 
 
 
-        toolbarMainBinding?.let {
-            it.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    // 문자열 입력을 완료했을 때 문자열 반환
-                    query?.let { viewModel.setKeyword(query) }
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    // 문자열이 변할 때마다 즉각 문자열 반환
-                    newText?.let {
-                        if (it.isNotEmpty()) {
-                            viewModel.setKeyword(it)
-                            Log.d("yezzz mainActivity", "text change: $it")
-                            return true
-                        }
-                    }
-                    return false
-                }
-            })
-        }
-
-        toolbarDetailBinding?.let { it ->
-            it.ibNormalLike.setOnClickListener {
-                setLikeResource(clickListener.onLikeClicked())
-            }
-            it.ibNormalBack.setOnClickListener {
-                it.findNavController().navigateUp()
-            }
-        }
 
     }
 
@@ -143,37 +117,31 @@ class MainActivity : AppCompatActivity(), NavController.OnDestinationChangedList
         destination: NavDestination,
         arguments: Bundle?
     ) {
-        setToolbar(destination.id)
+//        setToolbar(destination.id)
     }
 
 
-    private fun setToolbar(fragId: Int) {
-        var toolbar: Toolbar = toolbarMainBinding.tbSearchMain
-        when (fragId) {
-            R.id.fragment_search_main -> {
-                toolbar = toolbarMainBinding.tbSearchMain
-            }
-            R.id.fragment_search_detail -> {
-                toolbar = toolbarDetailBinding.tbSearchDetail
-            }
-        }
+//    private fun setToolbar(fragId: Int) {
+//        var toolbar: Toolbar = toolbarMainBinding.tbSearchMain
+//        when (fragId) {
+//            R.id.fragment_search_main -> {
+//                toolbar = toolbarMainBinding.tbSearchMain
+//            }
+//            R.id.fragment_search_detail -> {
+//                toolbar = toolbarDetailBinding.tbSearchDetail
+//            }
+//        }
+//
+//        binding.appbarLayout.removeAllViews()
+//        binding.appbarLayout.addView(toolbar)
+//        setSupportActionBar(toolbar)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+//
+//    }
 
-        binding.appbarLayout.removeAllViews()
-        binding.appbarLayout.addView(toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(false)
-
-    }
-    private fun setLikeResource(liked: Boolean) {
-        var resId: Int = R.drawable.ic_favorite_empty_24
-        if (liked) resId = R.drawable.ic_favorite_filled_24
-        _toolbarDetailBinding?.let {
-            it.ibNormalLike.setImageResource(resId)
-        }
-    }
 }
 
-interface ClickListener {
-//    fun onBookItemClick()
-    fun onLikeClicked() : Boolean
-}
+//interface ClickListener {
+////    fun onBookItemClick()
+//    fun onLikeClicked() : Boolean
+//}

@@ -18,7 +18,7 @@ import com.yeji.presentation.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SearchDetailFragment : Fragment(), ClickListener {
+class SearchDetailFragment : Fragment() {
     private val TAG = SearchDetailFragment::class.java.simpleName
 
     private var _binding: FragmentSearchDetailBinding? = null
@@ -89,33 +89,32 @@ class SearchDetailFragment : Fragment(), ClickListener {
         binding.tvDetailBookDescription.text = bookData.contents
         binding.tvDetailBookPrice.text = LocalizeCurrency.getCurrency(bookData.price as Double)
 
-        //TODO: edit
-        activity?.actionBar.let {
-            it?.title = ""
-        }
-        /*
 
-        binding.ibNormalBack.setOnClickListener {
+        binding.toolbarSearchDetail.ibNormalBack.setOnClickListener {
 //            parentFragmentManager.popBackStack()
             findNavController().navigateUp()
         }
-        */
+        binding.toolbarSearchDetail.ibNormalLike.setOnClickListener {
+            // toggle like status
+            var status = viewModel.uiState.value.bookList[position]?.like
+            status = !status!!
+            bookData.like = status
+
+            setLikeResource(status)
+
+            viewModel.uiState.value.bookList.let {
+                val mutableList = it.toMutableList()
+                mutableList[position] = bookData
+                viewModel.setBookList(mutableList.toList())
+            }
+
+            Log.d("yezzz", "pos: $position, like: ${viewModel.uiState.value.bookList?.get(position)?.like}")
+        }
     }
 
-    override fun onLikeClicked(): Boolean {
-        // toggle like status
-        var status = viewModel.uiState.value.bookList[position]?.like
-        status = !status!!
-        bookData.like = status
-
-        viewModel.uiState.value.bookList.let {
-            val mutableList = it.toMutableList()
-            mutableList[position] = bookData
-            viewModel.setBookList(mutableList.toList())
-        }
-
-        Log.d("yezzz", "pos: $position, like: ${viewModel.uiState.value.bookList?.get(position)?.like}")
-
-        return status
+    private fun setLikeResource(liked: Boolean) {
+        var resId: Int = R.drawable.ic_favorite_empty_24
+        if (liked) resId = R.drawable.ic_favorite_filled_24
+        binding.toolbarSearchDetail.ibNormalLike.setImageResource(resId)
     }
 }

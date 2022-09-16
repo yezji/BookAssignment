@@ -137,7 +137,25 @@ class SearchMainFragment : Fragment() {
         }*/
 
 
+        binding.toolbarSearchMain.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    // 문자열 입력을 완료했을 때 문자열 반환
+                    query?.let { viewModel.setKeyword(query) }
+                    return true
+                }
 
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    // 문자열이 변할 때마다 즉각 문자열 반환
+                    newText?.let {
+                        if (it.isNotEmpty()) {
+                            viewModel.setKeyword(it)
+                            Log.d("yezzz mainActivity", "text change: $it")
+                            return true
+                        }
+                    }
+                    return false
+                }
+            })
     }
 
 
