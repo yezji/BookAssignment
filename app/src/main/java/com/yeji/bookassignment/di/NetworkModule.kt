@@ -48,7 +48,7 @@ object NetworkModule {
         return OkHttpClient
             .Builder()
             .addNetworkInterceptor(interceptor = headerInterceptor) // header
-            .addInterceptor(interceptor = httpLoggingInterceptor ?: HttpLoggingInterceptor().apply { this.level = HttpLoggingInterceptor.Level.BODY })
+            .addInterceptor(interceptor = httpLoggingInterceptor)
 
             .readTimeout(INT_TYPE_NETWORK_TIME_OUT, TimeUnit.MILLISECONDS)
             .connectTimeout(INT_TYPE_NETWORK_TIME_OUT, TimeUnit.MILLISECONDS)

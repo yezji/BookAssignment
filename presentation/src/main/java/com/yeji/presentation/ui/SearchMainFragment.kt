@@ -140,7 +140,7 @@ class SearchMainFragment : Fragment() {
         binding.toolbarSearchMain.svSearchMain.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     // 문자열 입력을 완료했을 때 문자열 반환
-                    query?.let { viewModel.setKeyword(query) }
+                    query?.let { viewModel.setKeyword(query, true) }
                     return true
                 }
 
@@ -148,7 +148,7 @@ class SearchMainFragment : Fragment() {
                     // 문자열이 변할 때마다 즉각 문자열 반환
                     newText?.let {
                         if (it.isNotEmpty()) {
-                            viewModel.setKeyword(it)
+                            viewModel.setKeyword(it, false)
                             Log.d("yezzz mainActivity", "text change: $it")
                             return true
                         }
@@ -160,7 +160,7 @@ class SearchMainFragment : Fragment() {
 
 
 
-    fun submitBookList(bookList: List<BookData?>) {
+    private fun submitBookList(bookList: List<BookData?>) {
         // submitList to adapter
         adapter.submitList(bookList)
         Log.d("yezzz mainfragment", "call adapter submit ${bookList.size}")
@@ -213,18 +213,17 @@ class SearchMainFragment : Fragment() {
     suspend fun loadMore() {
         withContext(Dispatchers.Default) {
             // add progress bar item to last row
-            adapter.addLoading()
+            submitBookList(adapter.addLoading())
 
             delay(1000L)
 
             // delete progress bar item
-            adapter.deleteLoading()
+            submitBookList(adapter.deleteLoading())
 
             delay(200L)
             // load more items
             adapter.apply {
                 viewModel.getMoreList()
-                // TODO: submitList 따로?
                 submitList(viewModel.uiState.value.bookList)
             }
         }

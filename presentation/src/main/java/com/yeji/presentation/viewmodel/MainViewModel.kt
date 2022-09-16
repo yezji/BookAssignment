@@ -91,33 +91,46 @@ class MainViewModel @Inject constructor(
     private var testFlow: Flow<String>? = null
     private var testJob: Job? = null
 
-    fun setKeyword(keyword: String) {
+    fun setKeyword(keyword: String, isImmediate: Boolean) {
         // _uiState.value = _uiState.value.copy(page = 1) 이런식으로 바로 넣어주면 스레드 간 경쟁상태 생길 수 있다. 그래서 atomic하게 값을 변경하기 위해 update를 사용한다.
         // https://medium.com/geekculture/atomic-updates-with-mutablestateflow-dc0331724405
         _uiState.update { it.copy(keyword = keyword) }
 
-        // 검색어 입력 후 2초 뒤에 api 요청하기 (수정 시간 주는 역할)
-        testFlow =
-            testFlowFunc()
-                .debounce(2000)
-                .filter { query ->
-                    query.isNotBlank() // Blank는 Empty까지 체크한다. Blank는 빈칸까지 체크.
-                }
-                .distinctUntilChanged()
+        if (isImmediate) {
+            flow<String> {
+                emit(_uiState.value.keyword!!)
+            }
+            .filter { query ->
+                query.isNotBlank() // Blank는 Empty까지 체크한다. Blank는 빈칸까지 체크.
+            }
+            .onEach {
+                getAllList()
+            }.launchIn(viewModelScope)
+        }
+        else {
+            // 검색어 입력 후 2초 뒤에 api 요청하기 (수정 시간 주는 역할)
+            testFlow =
+                testFlowFunc()
+                    .debounce(2000)
+                    .filter { query ->
+                        query.isNotBlank() // Blank는 Empty까지 체크한다. Blank는 빈칸까지 체크.
+                    }
+                    .distinctUntilChanged()
 //                .flatMapLatest { str ->
 //                    Log.d("yezzz mainviewmodel", "flatMapLatest string: $str")
 //                    flow<String> {
 //                        emit(str)
 //                    }
 //                }
-                .onEach {
-                    getAllList()
-                    Log.d("yezzz mainviewmodel", "debounce string: $it")
-                }
+                    .onEach {
+                        getAllList()
+                        Log.d("yezzz mainviewmodel", "debounce string: $it")
+                    }
 
-        // flow를
-        if (testJob?.isActive == true) testJob?.cancel()
-        testJob = testFlow?.launchIn(viewModelScope)
+            // flow를
+            if (testJob?.isActive == true) testJob?.cancel()
+            testJob = testFlow?.launchIn(viewModelScope)
+        }
 
         Log.d(
             "yezzz mainviewmodel",
@@ -135,15 +148,15 @@ class MainViewModel @Inject constructor(
         _uiState.update { it.copy(bookList = bookList) }
     }
 
-    fun setPage(page: Int) {
+    private fun setPage(page: Int) {
         _uiState.update { it.copy(page = page) }
     }
 
-    fun setIsEnd(isEnd: Boolean) {
+    private fun setIsEnd(isEnd: Boolean) {
         _uiState.update { it.copy(isEnd = isEnd) }
     }
 
-    fun setPageableCount(pageableCount: Int) {
+    private fun setPageableCount(pageableCount: Int) {
         _uiState.update { it.copy(pageableCount = pageableCount) }
     }
 
@@ -151,7 +164,7 @@ class MainViewModel @Inject constructor(
         _uiState.update { it.copy(page = (it.page ?: 1) + 1) }
     }
 
-    fun setTotalCount(totalCount: Int) {
+    private fun setTotalCount(totalCount: Int) {
         _uiState.update { it.copy(totalCount = totalCount) }
     }
 
@@ -159,11 +172,11 @@ class MainViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = isLoading) }
     }
 
-    fun setLoadError(loadError: String?) {
+    private fun setLoadError(loadError: String?) {
         _uiState.update { it.copy(loadError = loadError) }
     }
 
-    fun setIsProgressVisible(isProgressVisible: Boolean) {
+    private fun setIsProgressVisible(isProgressVisible: Boolean) {
         _uiState.update { it.copy(isProgressVisible = isProgressVisible) }
     }
 
@@ -213,8 +226,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun getMoreList() {
-        viewModelScope.launch { getSearchBookList()
-        }
+        viewModelScope.launch { getSearchBookList() }
     }
 
     private suspend fun getSearchBookList(
@@ -227,7 +239,7 @@ class MainViewModel @Inject constructor(
         setIsLoading(true)
 
         if (uiState.value.keyword.equals("")) {
-            setKeyword("가")
+            setKeyword("가", true)
         }
         Log.d("yezzz viewmodel", "isLoading: ${uiState.value.isLoading}")
         Log.d("yezzz viewmodel", "query: $query, page: $page")

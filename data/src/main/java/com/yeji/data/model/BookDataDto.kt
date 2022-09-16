@@ -39,3 +39,7 @@ fun BookDataDto.toDomainModel() : BookData {
         like = false
     )
 }
+
+fun List<BookDataDto>.toDomainList() = map {
+    it.toDomainModel()
+}
