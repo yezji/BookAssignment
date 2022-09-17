@@ -19,6 +19,20 @@
         <entry key="app/src/main/res/layout/fragment_search_main.xml" value="0.10869565217391304" />
         <entry key="app/src/main/res/layout/view_main_book_item.xml" value="0.165" />
         <entry key="app/src/main/res/layout/view_main_book_item_loading.xml" value="0.12907608695652173" />
+        <entry key="presentation/src/main/res/drawable-v24/ic_back_24.xml" value="0.1" />
+        <entry key="presentation/src/main/res/drawable-v24/ic_favorite_empty_24.xml" value="0.1" />
+        <entry key="presentation/src/main/res/drawable-v24/ic_favorite_filled_24.xml" value="0.1" />
+        <entry key="presentation/src/main/res/drawable-v24/ic_image_24.xml" value="0.1" />
+        <entry key="presentation/src/main/res/drawable-v24/ic_search_24.xml" value="0.1" />
+        <entry key="presentation/src/main/res/drawable-v24/shape_underline_gray20.xml" value="0.1" />
+        <entry key="presentation/src/main/res/layout/activity_main.xml" value="0.11684782608695653" />
+        <entry key="presentation/src/main/res/layout/fragment_search_detail.xml" value="0.11684782608695653" />
+        <entry key="presentation/src/main/res/layout/fragment_search_main.xml" value="0.11684782608695653" />
+        <entry key="presentation/src/main/res/layout/toolbar_search_detail.xml" value="0.10555555555555556" />
+        <entry key="presentation/src/main/res/layout/toolbar_search_main.xml" value="0.10555555555555556" />
+        <entry key="presentation/src/main/res/layout/view_main_book_item.xml" value="0.1" />
+        <entry key="presentation/src/main/res/layout/view_main_book_item_loading.xml" value="0.1403242147922999" />
+        <entry key="presentation/src/main/res/menu/bottom_navigation_view.xml" value="0.10555555555555556" />
       </map>
     </option>
   </component>

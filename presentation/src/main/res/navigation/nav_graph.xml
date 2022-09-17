@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragment_search_main">
+
+    <fragment
+        android:id="@+id/fragment_search_main"
+        android:name="com.yeji.presentation.ui.SearchMainFragment"
+        android:label="@null"
+        tools:layout="@layout/fragment_search_main"
+        >
+        <action
+            android:id="@+id/action_fragment_search_main_to_fragment_search_detail"
+            app:destination="@id/fragment_search_detail" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragment_search_detail"
+        android:name="com.yeji.presentation.ui.SearchDetailFragment"
+        android:label="@null"
+        tools:layout="@layout/fragment_search_detail" >
+        <argument android:name="itemPosition"
+            app:argType="integer" />
+    </fragment>
+</navigation>

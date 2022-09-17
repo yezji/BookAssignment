@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.yeji.presentation.ui.SearchMainFragment"
+
+    android:id="@+id/tb_search_detail"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="@color/white_100"
+    app:contentInsetStart="20dp"
+    app:contentInsetEnd="20dp"
+    >
+
+    <ImageButton
+        android:id="@+id/ib_normal_back"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_back_24"
+        android:background="@null"
+        android:scaleType="fitXY"
+        android:layout_gravity="start"
+        android:padding="2dp"
+        />
+    <TextView
+        android:id="@+id/tv_normal_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:layout_gravity="start|center_vertical"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textSize="20dp"
+        tools:text="titletitletitle"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:paddingStart="12dp"
+        />
+    <ImageButton
+        android:id="@+id/ib_normal_like"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_favorite_empty_24"
+        android:background="@null"
+        android:scaleType="fitXY"
+        android:layout_gravity="end"
+        android:visibility="visible"
+        tools:visibility="visible"
+        />
+</androidx.appcompat.widget.Toolbar>
