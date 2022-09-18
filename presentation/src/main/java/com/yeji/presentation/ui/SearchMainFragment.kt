@@ -10,6 +10,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +24,7 @@ import com.yeji.domain.model.BookData
 import com.yeji.presentation.R
 import com.yeji.presentation.databinding.FragmentSearchMainBinding
 import com.yeji.presentation.viewmodel.MainViewModel
+import com.yeji.presentation.viewmodel.SearchMainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
@@ -33,7 +35,7 @@ class SearchMainFragment : Fragment() {
     private var _binding: FragmentSearchMainBinding? = null
     private val binding: FragmentSearchMainBinding get() = requireNotNull(_binding)
 
-    private val viewModel: MainViewModel by activityViewModels()
+    private val viewModel: SearchMainViewModel by viewModels<SearchMainViewModel>()
     private lateinit var adapter: BookResultAdapter
     private lateinit var layoutManager: LinearLayoutManager
 
